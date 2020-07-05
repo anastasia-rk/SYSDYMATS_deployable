@@ -1,5 +1,6 @@
 %% Add mylibs to and subdirectories to path in local directory
 % Requires that mylibs is located in the parent folder.
+userpath reset; startup;
 LibFolder = 'mylibs';                                                       % name of library name
 pathCell = regexp(path, pathsep, 'split')';                                 % array of directories in Matlab path
 index_path = find(cell2mat(strfind(pathCell,LibFolder)));                   % find whether path contains mylibs
@@ -17,10 +18,12 @@ git = 4;                                                                    % gi
 N = length(f);
 for iDir=git:N
     if f(iDir).isdir
-       if newPath || ~any(cell2mat(strfind(myPath,f(iDir).name)))           % if directory is not in path
+       if newPath || ~any(cell2mat(strfind(myPath,f(iDir).name)))
         addpath([LibFolder,'/',f(iDir).name]);
        end
     end
 end
 %% Figure and interpreter setup
 my_init;
+visFlag = 'Off'; %% or 'Off'
+disFlag = false; % set to false to prevent from displaying updates in work space

@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#$ -l rmem=16G
+#$ -l h_rt=48:00:00
+#$ -cwd 
+#$ -m bea                            
+#$ -M a.kadochnikova@sheffield.ac.uk
+#$ -o errors.txt
+#$ -j y
+
+module load apps/matlab/2019b
+matlab -nodesktop -nojvm -nosplash -r 'try main_poly('foam_2020','HF'); catch; end; quit'
