@@ -1,0 +1,158 @@
+MATLAB is selecting SOFTWARE OPENGL rendering.
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+              R2019b Update 2 (9.7.0.1247435) 64-bit (glnxa64)
+                              November 7, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+---------------------------------------------------------------------------
+CVX: Software for Disciplined Convex Programming       (c)2014 CVX Research
+Version 2.2, Build 1148 (62bfcca)                  Tue Jan 28 00:51:35 2020
+---------------------------------------------------------------------------
+Installation info:
+    Path: /home/co1akad/MATLAB/cvx
+    MATLAB version: 9.7 (R2019b)
+    OS: Linux amd64 version 3.10.0-1127.8.2.el7.x86_64
+    Java version: 1.8.0_202
+Verfying CVX directory contents:
+    WARNING: The following files/directories are missing:
+        /home/co1akad/MATLAB/cvx/sedumi/.travis.yml
+    These omissions may prevent CVX from operating properly.
+    WARNING: The following extra files/directories were found:
+        /home/co1akad/MATLAB/cvx/startup.m
+    These files may alter the behavior of CVX in unsupported ways.
+Preferences: 
+    Path: /home/co1akad/.matlab/cvx_prefs.mat
+License host:
+    Username: co1akad
+    Host ID: 80000002fe80 (ib0,10.112.0.214)
+Installed license:
+    Also in file: cvx_license.dat
+    Also in file: /home/co1akad/MATLAB/cvx/cvx_license.dat
+    Organization: University of Sheffield
+    Contact: Pablo Baldivieso Monasterios (p.baldivieso@sheffield.ac.uk)
+    License type: academic
+    Named user: co1akad
+    Host ID: 80000002fe80
+    Expiration: 2021-06-16 (346 days remaining)
+    Status: verified
+---------------------------------------------------------------------------
+Setting CVX paths...done.
+Saving updated path...failed. (see below)
+Searching for solvers...5 shims found.
+3 solvers initialized (* = default):
+    Mosek    9.1.9      {cvx}/mosek/a64
+ *  SDPT3    4.0        {cvx}/sdpt3
+    SeDuMi   1.3.4      {cvx}/sedumi
+2 solvers skipped:
+    GLPK                
+        Could not find a GLPK installation.
+    Gurobi   unknown    {cvx}/gurobi/a64
+        No valid Gurobi license was found.
+Saving updated preferences...done.
+Testing with a simple model...done!
+---------------------------------------------------------------------------
+To change the default solver, type "cvx_solver <solver_name>".
+To save this change for future sessions, type "cvx_save_prefs".
+Please consult the users' guide for more information.
+---------------------------------------------------------------------------
+NOTE: the MATLAB path has been changed to point to the CVX distribution. To
+use CVX without having to re-run CVX_SETUP every time MATLAB starts, you
+will need to save this path permanently. This script attempted to do this
+for you, but failed---likely due to UNIX permissions restrictions.
+To solve the problem, edit the file
+    /home/co1akad/MATLAB/cvx/startup.m
+and add the following line to the end of the file:
+    run /home/co1akad/MATLAB/cvx/cvx_startup.m
+Please consult the MATLAB documentation for more information about the
+startup.m file and its proper placement and usage.
+---------------------------------------------------------------------------
+
+[Warning: MATLAB has disabled some advanced graphics rendering features by
+switching to software OpenGL. For more information, click <a
+href="matlab:opengl('problems')">here</a>.] 
+{Index exceeds the number of array elements (6).
+
+Error in main_poly_HS (line 382)
+        RSS_spl_mpo(iLambda,iFile)    = PE_spl_mpo'*PE_spl_mpo/nData(iFile);
+} 
+MATLAB is selecting SOFTWARE OPENGL rendering.
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2019 The MathWorks, Inc.
+              R2019b Update 2 (9.7.0.1247435) 64-bit (glnxa64)
+                              November 7, 2019
+
+ 
+To get started, type doc.
+For product information, visit www.mathworks.com.
+ 
+
+---------------------------------------------------------------------------
+CVX: Software for Disciplined Convex Programming       (c)2014 CVX Research
+Version 2.2, Build 1148 (62bfcca)                  Tue Jan 28 00:51:35 2020
+---------------------------------------------------------------------------
+Installation info:
+    Path: /home/co1akad/MATLAB/cvx
+    MATLAB version: 9.7 (R2019b)
+    OS: Linux amd64 version 3.10.0-1127.8.2.el7.x86_64
+    Java version: 1.8.0_202
+Verfying CVX directory contents:
+    WARNING: The following files/directories are missing:
+        /home/co1akad/MATLAB/cvx/sedumi/.travis.yml
+    These omissions may prevent CVX from operating properly.
+    WARNING: The following extra files/directories were found:
+        /home/co1akad/MATLAB/cvx/startup.m
+    These files may alter the behavior of CVX in unsupported ways.
+Preferences: 
+    Path: /home/co1akad/.matlab/cvx_prefs.mat
+License host:
+    Username: co1akad
+    Host ID: 80000002fe80 (ib0,10.112.0.153)
+Installed license:
+    Also in file: cvx_license.dat
+    Also in file: /home/co1akad/MATLAB/cvx/cvx_license.dat
+    Organization: University of Sheffield
+    Contact: Pablo Baldivieso Monasterios (p.baldivieso@sheffield.ac.uk)
+    License type: academic
+    Named user: co1akad
+    Host ID: 80000002fe80
+    Expiration: 2021-06-16 (346 days remaining)
+    Status: verified
+---------------------------------------------------------------------------
+Setting CVX paths...done.
+Saving updated path...failed. (see below)
+Searching for solvers...5 shims found.
+3 solvers initialized (* = default):
+    Mosek    9.1.9      {cvx}/mosek/a64
+ *  SDPT3    4.0        {cvx}/sdpt3
+    SeDuMi   1.3.4      {cvx}/sedumi
+2 solvers skipped:
+    GLPK                
+        Could not find a GLPK installation.
+    Gurobi   unknown    {cvx}/gurobi/a64
+        No valid Gurobi license was found.
+Saving updated preferences...done.
+Testing with a simple model...done!
+---------------------------------------------------------------------------
+To change the default solver, type "cvx_solver <solver_name>".
+To save this change for future sessions, type "cvx_save_prefs".
+Please consult the users' guide for more information.
+---------------------------------------------------------------------------
+NOTE: the MATLAB path has been changed to point to the CVX distribution. To
+use CVX without having to re-run CVX_SETUP every time MATLAB starts, you
+will need to save this path permanently. This script attempted to do this
+for you, but failed---likely due to UNIX permissions restrictions.
+To solve the problem, edit the file
+    /home/co1akad/MATLAB/cvx/startup.m
+and add the following line to the end of the file:
+    run /home/co1akad/MATLAB/cvx/cvx_startup.m
+Please consult the MATLAB documentation for more information about the
+startup.m file and its proper placement and usage.
+---------------------------------------------------------------------------
+
