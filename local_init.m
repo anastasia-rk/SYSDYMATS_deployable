@@ -1,6 +1,6 @@
 %% Add mylibs to and subdirectories to path in local directory
 % Requires that mylibs is located in the parent folder.
-userpath reset; startup;
+%userpath reset; startup;
 LibFolder = 'mylibs';                                                       % name of library name
 pathCell = regexp(path, pathsep, 'split')';                                 % array of directories in Matlab path
 index_path = find(cell2mat(strfind(pathCell,LibFolder)));                   % find whether path contains mylibs
@@ -23,6 +23,9 @@ for iDir=git:N
        end
     end
 end
+%% CVX setup for SHARC - have to call every time
+addpath('../MATLAB/cvx');
+cvx_setup  cvx_license.dat
 %% Figure and interpreter setup
 my_init;
 visFlag = 'Off'; %% or 'Off'
