@@ -1,7 +1,7 @@
 local_init;
 %% Test Van-der-Pol oscilator
 % create folder to store simulation data
-folderName = make_folder('vdpo');                     
+folderName = make_folder('../SYSDYMATS_data/vdpo');                     
 % Initial conditions
 tspan = [0 1000];                                                           % integration span
 y0 = [2; 0];                                                                % ODE initial conditions
