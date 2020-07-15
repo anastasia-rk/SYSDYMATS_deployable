@@ -9,4 +9,4 @@
 #$ -j y
 
 module load apps/matlab/2019b
-matlab -nodesktop -nojvm -nosplash -r 'try main_poly('foam_2020','HS'); catch; end; quit'
+matlab -nodesktop -nosplash -r main_poly_HS

@@ -27,7 +27,7 @@ function [ pimat ] = SPLAsso( I, R, groups, l1, l2)
     sqr_group_sizes = sqrt(group_sizes);                                    % To speed up execution
     
     cvx_begin quiet
-    cvx_solver  mosek % sedumi % gurobi % mosek %
+    cvx_solver  gurobi %  mosek % sedumi %mosek %
         variable pimat_sgl(n,m)
 
         % Zero-Constrained Sparse Group Lasso Model
