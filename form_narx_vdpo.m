@@ -8,7 +8,7 @@ output_i = 3;                                                       % output col
 K        = 10;                                                      % number of datasets
 normC    = 1;
 dataset = 'V';
-addpath(foamset)
+addpath('..\SYSDYMATS_data\',foamset)
 load('External_parameters_V');
 folder = 'dictionaries';
 normalise = questdlg('Scale the data?', ...
@@ -88,27 +88,29 @@ end
 %% Smoothers for discrete derivative estimation
 dT  = 1/sampFr;
 plotInt = 1:500;
-sgolayOrder = 9;
-sgolayFrame = min(45,sgolayOrder*2+1);
-% Savitzky-Golay - polynomial moving window smoother that preserves signal
-% shape with high order polynomials
-[b,g] = sgolay(sgolayOrder,sgolayFrame);
-% KF - measured input and output cnsidered as noiseless measurements
-sig2_y = 1;
-sig2_u = 4;
-A = eye(lambda+1);
-for i=1:lambda+1
-    for j=i+1:lambda+1
-        A(i,j) = dT^(j-i)/factorial(j-i);
+if exist('lambda') == 1
+    sgolayOrder = 9;
+    sgolayFrame = min(45,sgolayOrder*2+1);
+    % Savitzky-Golay - polynomial moving window smoother that preserves signal
+    % shape with high order polynomials
+    [b,g] = sgolay(sgolayOrder,sgolayFrame);
+    % KF - measured input and output cnsidered as noiseless measurements
+    sig2_y = 1;
+    sig2_u = 4;
+    A = eye(lambda+1);
+    for i=1:lambda+1
+        for j=i+1:lambda+1
+            A(i,j) = dT^(j-i)/factorial(j-i);
+        end
     end
+    % A = [zeros(lambda,1) triu(ones(lambda+1))*dT; zeros(1,lambda+1)];
+    B = zeros(lambda+1,1); u = 0; % no deterministic input
+    G = [zeros(lambda,1); 1];
+    C = [1 zeros(1,lambda)];
+    Q_y = sig2_y*G*G';
+    Q_u = sig2_u*G*G';
+    R = 0.0001;
 end
-% A = [zeros(lambda,1) triu(ones(lambda+1))*dT; zeros(1,lambda+1)];
-B = zeros(lambda+1,1); u = 0; % no deterministic input
-G = [zeros(lambda,1); 1];
-C = [1 zeros(1,lambda)];
-Q_y = sig2_y*G*G';
-Q_u = sig2_u*G*G';
-R = 0.0001;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create index permutations for sums
 % Intial combination accounts for all linear regressors
@@ -161,6 +163,7 @@ y = Output(timesNarx);
 u = Input(timesNarx-1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Direct delta-op computation
+if exist('lambda') == 1
  for t=lambda+1:length(timesNarx)
         for iLambda=1:lambda
             delta_y_b(iLambda,t) = delta_operator(iLambda,y,t,dT,'Backward'); 
@@ -221,7 +224,6 @@ for iLambda = 1:lambda
     plot(y_kf(iLambda+1,plotInt)); hold on;
     plot(y_ks(iLambda+1,plotInt)); hold on;
     xlabel('Index');ylabel(['$\delta^{',num2str(iLambda),'}y(t)$']);
-%     legend('$\delta$ forward','SGF','KF','RTS');
     legend('$\delta$ backward','$\delta$ forward','SGF','KF','RTS');
 end
 subplot(2,L2,lambda+2);
@@ -239,8 +241,8 @@ for iLambda = 1:lambda
     plot(u_kf(iLambda+1,plotInt)); hold on;
     plot(u_ks(iLambda+1,plotInt)); hold on;
     xlabel('Index');ylabel(['$\delta^{',num2str(iLambda),'}u(t)$']);
-%     legend('$\delta$ forward','SGF','KF','RTS');
     legend('$\delta$ backward','$\delta$ forward','SGF','KF','RTS');
+end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of input vectors
@@ -265,7 +267,8 @@ switch regressors
                     x_narx = [y_ks(1:lambda,:); u_ks];
               end   
 end
-nNarx = length(y_narx);                                                          
+nNarx = length(y_narx);  
+u_narx(:,:) = Input(timesNarx); % for calling the input from the inline function in MPO - no delay is u(t-1) called from the function
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of delta-domain regressors
 iTerm = 0;
@@ -288,19 +291,25 @@ else
                                               indeces{iLambda}(k,:));       % compute the regressor (numeric)
             end
             symb_term{iTerm} = strcat(x_str{indeces{iLambda}(k,:)});        % dictionary of regressors (symbolic)
+             if size(indeces{iLambda},2) > 1
+                inline_term{iTerm} = [sprintf('%s*',x_str{indeces{iLambda}(k,1:end-1)}),x_str{indeces{iLambda}(k,end)}];
+            else
+                inline_term{iTerm} = x_str{indeces{iLambda}(k,1)};
+            end
+
         end
     end
 end
 iTerm = iTerm + 1;
 term(:,iTerm) = 1;
 symb_term{iTerm} = sym('c');
+inline_term{iTerm} = '1';
 if disFlag
    disp('Dictionary complete')
 end
 fileName = [folderName,'/dict_',dataset,num2str(iFile),'.mat'];
-save(fileName, 'term','x_narx','y_narx','nNarx','t_0','-v7.3');
-
-clear term x_narx y_narx y u y_kf u_kf
+save(fileName, 'term','u_narx','x_narx','y_narx','nNarx','t_0','-v7.3');
+clear term x_narx y_narx u_narx y u y_kf u_kfend
 end
 %%
 % end loop over files
@@ -312,11 +321,11 @@ switch regressors
     case 'Shift'
         fileMeta = ['Meta_',dataset];
         fileMetaLocal = [folderName,'/Meta_',dataset];
-        save(fileMeta,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','dict_terms','indeces','lambda_p','n_y','n_u','K','normC','-v7.3');
-        save(fileMetaLocal,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','dict_terms','indeces','lambda_p','n_y','n_u','K','normC','-v7.3');   
+        save(fileMeta,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','lambda_p','n_y','n_u','K','normC','-v7.3');
+        save(fileMetaLocal,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','lambda_p','n_y','n_u','K','normC','-v7.3');   
     case 'Delta'
         fileMeta = ['Meta_delta_',dataset];
         fileMetaLocal = [folderName,'/Meta_delta_',dataset];
-        save(fileMeta,'dictFolder','nTerms','nNarx','symb_term','x_str','y_str','dict_terms','indeces','lambda','lambda_p','d','K','normC','-v7.3');   
-        save(fileMetaLocal,'dictFolder','nTerms','nNarx','symb_term','x_str','y_str','dict_terms','indeces','lambda_p','d','K','normC','-v7.3');
+        save(fileMeta,'dictFolder','nTerms','nNarx','symb_term','inline_term','x_str','y_str','dict_terms','indeces','lambda','lambda_p','d','K','normC','-v7.3');   
+        save(fileMetaLocal,'dictFolder','nTerms','nNarx','symb_term','inline_term','x_str','y_str','dict_terms','indeces','lambda_p','d','K','normC','-v7.3');
 end

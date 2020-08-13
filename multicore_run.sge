@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#$ -cwd 
+#$ -m bea                            
+#$ -M a.kadochnikova@sheffield.ac.uk
+#$ -o errors.txt
+#$ -j y
+
+module load apps/matlab/2019a/binary
+
+# Run parallel_example.m
+matlab -nodisplay -nosplash -r submit_matlab_parallel
