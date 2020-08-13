@@ -1,0 +1,64 @@
+% This file was created by matlab2tikz.
+%
+\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=5.856cm,
+height=6cm,
+at={(0cm,0cm)},
+scale only axis,
+xmin=0,
+xmax=30,
+xlabel style={font=\color{white!15!black}},
+xlabel={Terms},
+ymin=-70000,
+ymax=-35000,
+ylabel style={font=\color{white!15!black}},
+ylabel={BIC},
+axis background/.style={fill=white},
+legend style={legend cell align=left, align=left, draw=white!15!black}
+]
+\addplot [color=mycolor1]
+  table[row sep=crcr]{%
+1	-35496.3637236787\\
+2	-51678.6483880601\\
+3	-60848.3660150669\\
+4	-65391.9214400687\\
+5	-65550.6519989027\\
+6	-65873.7354223762\\
+7	-65988.1078742856\\
+8	-66592.1264271684\\
+9	-66693.7751844861\\
+10	-66751.5316455684\\
+11	-66767.0109221024\\
+12	-66783.6331267717\\
+13	-66788.9792654006\\
+14	-66785.5192159514\\
+15	-66778.8582148304\\
+16	-66770.6359299806\\
+17	-66762.0008783882\\
+18	-66754.3043141139\\
+19	-66745.9147318735\\
+20	-66737.2911130682\\
+21	-66729.2555301522\\
+22	-66720.5682393274\\
+24	-66703.3900494291\\
+25	-66695.5600195919\\
+27	-66678.9072456981\\
+28	-66670.8723133035\\
+29	-66662.654067128\\
+30	-66654.249842431\\
+};
+\addlegendentry{data1}
+
+\addplot [color=mycolor2, draw=none, mark=asterisk, mark options={solid, mycolor2}]
+  table[row sep=crcr]{%
+13	-66788.9792654006\\
+};
+\addlegendentry{data2}
+
+\end{axis}
+\end{tikzpicture}%

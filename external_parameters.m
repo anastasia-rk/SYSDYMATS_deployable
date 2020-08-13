@@ -1,4 +1,4 @@
-local_init;
+clear all; local_init;
 %% dataset C,D
 % Dictionary
 params_all = {'D_init','D_imposed','L_init','L_imposed','R_imposed',...
@@ -19,7 +19,7 @@ values(:,11) = [0.123,0.113,0.104,0.095,0.093,0.276,0.255,0.230,0.209,0.193]';
 M       = permn(1:L,2);                                                     % get all permutations with repetition
 ind     = find(M(:,2)>=M(:,1));                                             % sort out only increasing indeces
 indeces = M(ind,:);                                                         % updated set
-K       = length(indeces)                                                   % total number of sample pairs
+K       = length(indeces);                                                  % total number of sample pairs
 clear ind
 %% Check correlations of sample pairs
 check_var = 0/0;
@@ -47,8 +47,9 @@ fileName = 'External_parameters_D';
 save(fileName,'params','values');
 clear values params
 %% Dataset S-Z
-params = {'Cut, mm'};
+params = {'Cut length, m'};
 values = [3 3 3 5 5 5 7 7 7 0 0 0]';
+values = values./1000;
 % values = [values_cut; values_cut; values_cut; values_cut]
 fileName = 'External_parameters_S';
 save(fileName,'params','values');
@@ -57,28 +58,33 @@ save(fileName,'params','values');
 fileName = 'External_parameters_Y';
 save(fileName,'params','values');
 
-
 % Tests below have been done five times for each specimen with varying
 % noise power
 I = ones(1,5);
 %% Datasets HF - hardfoam
-params = {'Thickness, mm','Tension, $\%$'};
-params = {'Compression ration, $\%$'};
-values = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I;...
-          0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]';
+params = {'Thickness, mm','Tension'};
+values1 = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I]./1000;... % 
+values2 = [0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]./100; % 
+values  = [values1; values2]';
 fileName = 'External_parameters_HF';
 save(fileName,'params','values');
-
+clear values params
 %% Daatsets H,V - soft foam
-params = {'Thickness, mm','Tension, $\%$'};
-params = {'Compression ration, $\%$'};
+params = {'Compression ratio'};
 values = [40*I 50*I 60*I 70*I 80*I 0*I]';
+% values = values./100;
 fileName = 'External_parameters_VS';
 save(fileName,'params','values');
 fileName = 'External_parameters_HS';
 save(fileName,'params','values');
 
-
-
+%% Datasets D1 and D2 - sweep soft data
+params = {'Compression ratio'};
+values = [0 40 50 60 70 80]';
+values = values./100;
+fileName = 'External_parameters_D1';
+save(fileName,'params','values');
+fileName = 'External_parameters_D3';
+save(fileName,'params','values');
 
 

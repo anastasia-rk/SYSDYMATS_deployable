@@ -25,10 +25,8 @@ for iDir=git:N
 end
 %% Figure and interpreter setup
 my_init;
-visFlag = 'Off'; %% or 'Off'
-disFlag = false; % set to false to prevent from displaying updates in work space
+visFlag = 'On'; %% or 'Off'
+disFlag = true; % set to false to prevent from displaying updates in work space
 %% CVX setup for SHARC - have to call every time
-addpath('../MATLAB/cvx');
-cvx_setup 
-%% Optimisation and parfor settings
-nWorkers = 6;
+% addpath('../MATLAB/cvx');
+% cvx_setup 
