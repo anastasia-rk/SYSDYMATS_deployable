@@ -120,8 +120,8 @@ end
 if center
    meanIn   = mean(Input);
    Input  = Input - meanIn;
-   meanOut   = mean(Output);
-   Output  = Output - meanOut;
+%    meanOut   = mean(Output);
+%    Output  = Output - meanOut;
 end
 T   = min(10000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

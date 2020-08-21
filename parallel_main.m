@@ -1,27 +1,32 @@
 clear all; local_init;
 foamset = 'foam_2020';
-dataset = 'HS';
+dataset = 'VS';
 %%
 switch foamset
     case 'foam_2010'
             Files = [1 2 4 5 6 7 9 10];
             testFiles  = [3 8];
+            eps = 0.00005;
     case 'foam_2019'
             Files = [3 6 9 12];
             testFiles  = [1 3 5 7 8 10 11];
+            eps = 0.00005;
     case 'foam_2020'
     switch dataset
         case 'HS'
             Files = [5 10 15 20 25]; 
-            testFiles  = [1 8 9 12 14 17 19 23];
+            testFiles  = [1 5 9 10 14 19 23];
+            eps = 0.001;
         case 'VS'
-            Files = [4 5 8 10 13 15 18 20 22 25]; 
+            Files = [5 10 15 20 25]; 
 %             Files = [5 8 10 15 20 22 25];
             testFiles  = [1 8 9 12 14 17 19 23];
+            eps = 0.00005;
         case 'HF'
             Files = [5 10 15 20 25 30 35 40 45]; 
             testFiles  = [5 10 13 19 25 29 40 41];
             testFiles  = [1 10 7 12 17 23 27 33 36 42];
+            eps = 0.00005;
     end 
     case 'sweep_2020'
          Files = [1 3 4 5 6];
@@ -169,7 +174,7 @@ end
         end
         significant_term{iTerm} = symb_term{S(iTerm)};
         BIC_all(iTerm) = BIC_sum/K;                                         % average AMDL over all sets
-        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.00005); % check convergence
+        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < eps); % check convergence
         if converged_BIC
             bics  = [bics,iTerm];
         end
@@ -322,7 +327,10 @@ writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
 if disFlag
    fprintf(['OSA CV... \n'])
 end
-pool =  parpool('local');
+pool = gcp('nocreate');
+if isempty(pool)
+    pool =  parpool('local');
+end
 for iLambda = 1:nLambdas                                                    % across regiularisation coeffs  
     lambda   = lambdas(iLambda,1);                                          % RLS coefficient (from 10^-6 to 1)
     lambda_g = lambdas(iLambda,2);                                          % spasity calibration coefficient (from 0 to 1) 
