@@ -305,6 +305,10 @@ for iMpo = 1:length(Files)
     Phi_mpo{iFile} = Phi_bar(t_train,terms_train);
     M  = Phi_mpo{iFile}*Kr(terms_train,:);
     [Q_t,R_t] =  rdqr(M,1e-10);
+    [LSV,SIG,RSV] = svd(M,'econ');
+    LV_train_mpo{iFile} = LSV;
+    SV_train_mpo{iFile} = SIG;
+    RV_train_mpo{iFile} = RSV;
     Q_train_mpo{iFile} = Q_t;
     R_train_mpo{iFile} = R_t;
     Y_train_mpo{iFile}  = Y_all(t_train,:); 
@@ -315,7 +319,7 @@ for iMpo = 1:length(Files)
 end
 %% Random search vector
 addpath('LASSO_Shmidt')                                                     % for lasso library
-log_max = 0.5; log_min = -5; nLambdas = 50;
+log_max = 1; log_min = -5; nLambdas = 70;
 lambdas = [10.^(log_min + (log_max-log_min)*rand(nLambdas,1)) rand(nLambdas,1)];
 L       = size(A,2);
 fid_osa=fopen([dataset,'_progress_OSA.txt'],'w');
@@ -373,13 +377,21 @@ for iLambda = 1:nLambdas                                                    % ac
     tic;
     parfor  iMpo =1:length(Files) % for MPO - instead of folds loop over files. 
         iFile    = Files(iMpo); % counter to go through design parameter matrix
-        R_mm     = Q_train_mpo{iFile}'*Q_train_mpo{iFile};
-        gain     = pinv(R_mm + lambda*eye(size(R_mm)))*Q_train_mpo{iFile}'; % RLS gain
-        g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
-        g_lasso  = LassoShooting(Q_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
+%         R_mm     = Q_train_mpo{iFile}'*Q_train_mpo{iFile};
+%         gain     = pinv(R_mm + lambda*eye(size(R_mm)))*Q_train_mpo{iFile}'; % RLS gain
+%         g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
+%         g_lasso  = LassoShooting(Q_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
 %         g_spl    = SPLAsso(Y_train_mpo{iFile}, Q_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
-        Betas_tikh   = reshape(linsolve(R_train_mpo{iFile},g_bar,struct('UT', true)),[finalTerm L]); 
-        Betas_lass   = reshape(linsolve(R_train_mpo{iFile},g_lasso,struct('UT', true)),[finalTerm L]);  
+%         Betas_tikh   = reshape(linsolve(R_train_mpo{iFile},g_bar,struct('UT', true)),[finalTerm L]); 
+%         Betas_lass   = reshape(linsolve(R_train_mpo{iFile},g_lasso,struct('UT', true)),[finalTerm L]);
+% Try with SVD
+        R_mm     = LV_train_mpo{iFile}'*LV_train_mpo{iFile};
+        gain     = pinv(R_mm + lambda*eye(size(R_mm)))*LV_train_mpo{iFile}'; % RLS gain
+        g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
+        g_lasso  = LassoShooting(LV_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
+        Betas_tikh   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_bar,[finalTerm L]); 
+        Betas_lass   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_lasso,[finalTerm L]);  
+
 %         Betas_spgl   = reshape(linsolve(R_train_mpo{iFile},g_spl,struct('UT', true)),[finalTerm L]);  
         Theta_tikh{iMpo}  = Betas_tikh*A(iMpo,:)';
         Theta_lass{iMpo}  = Betas_lass*A(iMpo,:)';
@@ -507,23 +519,33 @@ cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '5cm', 'width','12cm','checkForUpdates',false);
 %% Estimate parameters with optimal regularisation coefficient
-[Q_all, R_all] =   mgson(M_all); % rdqr(M_all,1e-10); %
-g_bar   = Q_all\Y_all;
-B_bar   = linsolve(R_all,g_bar,struct('UT', true)); 
-Betas_nonreg_opt  = reshape(B_bar,[finalTerm,L]);
+% [Q_all, R_all] =   mgson(M_all); % rdqr(M_all,1e-10); %
+% g_bar   = Q_all\Y_all;
+% B_bar   = linsolve(R_all,g_bar,struct('UT', true)); 
+% Betas_nonreg_opt  = reshape(B_bar,[finalTerm,L]);
 %% Simple regularisation
 lambda_opt = lambdas(i_min,1);
 lambda_lasso_opt = lambdas(i_min_l,1);
 lambda_opt_mpo = lambdas(i_min_mpo,1);
 lambda_lasso_opt_mpo = lambdas(i_min_l_mpo,1);
-R_mm    = Q_all'*Q_all;
-gain    = pinv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*Q_all';               % RLS gain
-g_tikh  = gain*Y_all;
-B_tikh   = linsolve(R_all,g_tikh,struct('UT', true)); 
-g_lasso =  LassoShooting(Q_all,Y_all,lambda_lasso_opt_mpo,'verbose',0);
-B_lasso   = linsolve(R_all,g_lasso,struct('UT', true)); 
-Betas_tikh_opt  = reshape(B_tikh,[finalTerm,L]);
-Betas_lasso_opt = reshape(B_lasso,[finalTerm,L]);
+% R_mm    = Q_all'*Q_all;
+% gain    = pinv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*Q_all';               % RLS gain
+% g_tikh  = gain*Y_all;
+% B_tikh   = linsolve(R_all,g_tikh,struct('UT', true)); 
+% g_lasso =  LassoShooting(Q_all,Y_all,lambda_lasso_opt_mpo,'verbose',0);
+% B_lasso   = linsolve(R_all,g_lasso,struct('UT', true)); 
+% Betas_tikh_opt  = reshape(B_tikh,[finalTerm,L]);
+% Betas_lasso_opt = reshape(B_lasso,[finalTerm,L]);
+%% Regularisation using SVD
+[LV_all,SV_all,RV_all] = svd(M_all,'econ');
+g_bar   = LV_all\Y_all;
+Betas_nonreg_opt  = reshape(RV_all*pinv(SV_all)*g_bar,[finalTerm,L]);
+R_mm     = LV_all'*LV_all;
+gain     = pinv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*LV_all'; % RLS gain
+g_tikh    = gain*Y_all;                                 % Tikhonov
+g_lasso  = LassoShooting(LV_all,Y_all,lambda_lasso_opt_mpo,'verbose',0); % LASSO
+Betas_tikh_opt   = reshape(RV_all*pinv(SV_all)*g_tikh,[finalTerm L]); 
+Betas_lasso_opt   = reshape(RV_all*pinv(SV_all)*g_lasso,[finalTerm L]);  
 %% Sparse group lasso
 % lambda_spl_opt = lambdas(i_min_spl,1);
 % alpha_spl_opt = lambdas(i_min_spl,2);
