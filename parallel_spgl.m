@@ -694,7 +694,7 @@ tikzName = [folderName,'/','LASSO_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
-% Validate sparse group lasso
+%% Validate sparse group lasso
 Theta_test  = Betas_spl_opt*A_valid'; % Betas_nonortspl_opt*A_valid'; %
 iTheta      = 0;
 fig('Validation SPGL',visFlag);
