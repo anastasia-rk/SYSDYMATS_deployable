@@ -41,13 +41,15 @@ switch normalise
     case 'No'
         folder = 'dictionaries';                                             % specify category where to save files
         normC = 1;
+        center = false;
     case 'Yes'
         folder = 'dictionaries_norm';                                        % specify category where to save files
-
+        normC = 1;
+        center = true;
 end
 % foamset = 'foam_2010'; % 'foam_2019'
 % dataset = 'C'; %  'D'; %                                                    % name of dataset
-addpath(['../SYSDYMATS_data/',foamset])
+addpath(['..\SYSDYMATS_data\',foamset])
 iFile   = 1;                                                                % id of the sample
 % Length of input and output lags
 n_u     = 4;                                                                % input signal lag length
@@ -115,6 +117,12 @@ else
     Input  = fileData(:,input_i)./normC;
     Output = fileData(:,output_i)./normC;
 end
+if center
+   meanIn   = mean(Input);
+   Input  = Input - meanIn;
+   meanOut   = mean(Output);
+   Output  = Output - meanOut;
+end
 T   = min(10000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of input vectors
@@ -177,6 +185,6 @@ nTerms = iTerm;                                                             % to
 dict_terms = [1:nTerms];                                                    % dictionary of all terms
 fileMeta = ['Meta_',dataset];
 fileMetaLocal = [folderName,'/Meta_',dataset];
-save(fileMeta,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','n_y','n_u','K','normC','-v7.3');
-save(fileMetaLocal,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','n_y','n_u','K','normC','-v7.3');   
+save(fileMeta,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','n_y','n_u','K','normC','center','-v7.3');
+save(fileMetaLocal,'dictFolder','nTerms','nNarx','x_str','y_str','symb_term','inline_term','dict_terms','indeces','n_y','n_u','K','normC','center','-v7.3');   
         

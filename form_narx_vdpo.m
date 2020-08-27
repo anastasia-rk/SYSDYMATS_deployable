@@ -81,7 +81,7 @@ switch regressors
         end
         d = it;
         names = {'set','lambda'}; 
-        folderName = make_folder(folder,names,dataset,lambda);             % create results folder
+        folderName = make_folder(folder,names,dataset,lambda);             % create dictionary folder
 
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
