@@ -47,8 +47,9 @@ fileName = 'External_parameters_D';
 save(fileName,'params','values');
 clear values params
 %% Dataset S-Z
-params = {'Cut, mm'};
+params = {'Cut length, m'};
 values = [3 3 3 5 5 5 7 7 7 0 0 0]';
+values = values./1000;
 % values = [values_cut; values_cut; values_cut; values_cut]
 fileName = 'External_parameters_S';
 save(fileName,'params','values');
@@ -57,22 +58,21 @@ save(fileName,'params','values');
 fileName = 'External_parameters_Y';
 save(fileName,'params','values');
 
-
 % Tests below have been done five times for each specimen with varying
 % noise power
 I = ones(1,5);
 %% Datasets HF - hardfoam
-params = {'Thickness, mm','Tension, $\%$'};
-params = {'Compression ration, $\%$'};
-values = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I;...
-          0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]';
+params = {'Thickness, m','Tension'};
+values1 = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I]./1000;...
+values2 = [0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]./100;
+values  = [values1; values2]';
 fileName = 'External_parameters_HF';
 save(fileName,'params','values');
 
 %% Daatsets H,V - soft foam
-params = {'Thickness, mm','Tension, $\%$'};
-params = {'Compression ration, $\%$'};
+params = {'Compression ratio'};
 values = [40*I 50*I 60*I 70*I 80*I 0*I]';
+values = values./100;
 fileName = 'External_parameters_VS';
 save(fileName,'params','values');
 fileName = 'External_parameters_HS';

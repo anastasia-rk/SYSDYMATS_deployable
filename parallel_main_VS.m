@@ -75,10 +75,12 @@ if ~isempty(y)                                                              % un
        A_symb{iCol+1} = ['$x^',num2str(powers(iCol,1)),'$ $y^',num2str(powers(iCol,2)),'$']; 
    end
 else                                                                        % unknown mapping is a curve
-    nCols =  min(3,K);                                                      % number of terms in the model shouldn't be higher then K
+    powers = [-3 -2 -1 1 2 3];
+    nCols =  min(length(powers),K);                                         % number of terms in the model shouldn't be higher then K
     for iCol = 1:nCols                                                      % limit order of the model by the number of experimants
-       A = [A x.^(iCol)];
-       A_valid = [A_valid x_valid.^(iCol)];
+       A = [A x.^powers(iCol)];
+       A_valid = [A_valid x_valid.^powers(iCol)];
+       A_symb{iCol+1} = ['$x^{',num2str(powers(iCol)),'}$'];
    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

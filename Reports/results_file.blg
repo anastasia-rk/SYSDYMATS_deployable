@@ -1,0 +1,10 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: results_file.aux
+The style file: biblatex.bst
+I couldn't open database file bibliography.bib
+---line 20 of file results_file.aux
+ : \bibdata{results_file-blx,bibliography
+ :                                       }
+I'm skipping whatever remains of this command
+Database file #1: results_file-blx.bib
+Biblatex version: 3.3
+(There was 1 error message)
