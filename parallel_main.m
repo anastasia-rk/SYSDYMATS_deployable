@@ -42,6 +42,7 @@ if normC ~= 1 || center
     dFolder = [dFolder,'_norm'];
 end
 folderName = make_folder(folder,names,dataset,n_y,n_u);                     % create results folder
+dFolder = ['SYSDYMATS_dictionaries/',dFolder];
 dictFolder = make_folder(dFolder,names,dataset,n_y,n_u);                    % create results folder
 d       = n_y + n_u;                                                        % size of input vector x
 dict_set = ['dict_',dataset];                                   

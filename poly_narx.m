@@ -58,6 +58,7 @@ d       = n_y + n_u;                                                        % si
 lambda  = 3;                                                                % order of polynomial
 % a       = sym('x_',[1 d]);                                                % associated symbolic vector
 names = {'set','ny','nu'};                                                  % names used to define results folder name (no more than 3).
+folder = ['../SYSDYMATS_dictionaries/',folder];
 folderName = make_folder(folder,names,dataset,n_y,n_u);                     % create results folder
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

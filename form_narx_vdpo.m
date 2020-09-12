@@ -30,6 +30,7 @@ switch regressors
         d       = n_y + n_u;                                                % size of input vector x
         lambda_p  = 3;                                                      % order of polynomial
         names = {'set','ny','nu'};                                          % names used to define results folder name (no more than 3).
+        folder = ['../SYSDYMATS_dictionaries/',folder];
         folderName = make_folder(folder,names,dataset,n_y,n_u);             % create results folder
         iStr = 1;
         if n_y~=0
@@ -81,6 +82,7 @@ switch regressors
         end
         d = it;
         names = {'set','lambda'}; 
+        folder = ['../SYSDYMATS_dictionaries/',folder];
         folderName = make_folder(folder,names,dataset,lambda);             % create results folder
 
 end

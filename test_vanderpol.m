@@ -11,7 +11,7 @@ d = 20; ak = 0.2;                                                           % ex
 extract = [1:300];                                                         % extract from the array for the plot
 % mu_array = [0.0625 0.125 0.25 0.3 0.5 0.8 1];
 mu_array = [0.1:0.1:1];
-sampFr = 20;
+sampFr = 20; % 2 % 5 % 10 % 20 % 50 % 100 % 120 % 150 % 200
 t0 = [tspan(1):1/sampFr:tspan(end)]';
 nFr = 1000;
 f = sampFr*(0:nFr-1)/nFr;

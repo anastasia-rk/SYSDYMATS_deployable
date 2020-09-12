@@ -42,6 +42,7 @@ if normC ~= 1 || center
     dFolder = [dFolder,'_norm'];
 end
 folderName = make_folder(folder,names,dataset,n_y,n_u);                     % create results folder
+dFolder = ['../SYSDYMATS_dictionaries/',dFolder];
 dictFolder = make_folder(dFolder,names,dataset,n_y,n_u);                    % create results folder
 d       = n_y + n_u;                                                        % size of input vector x
 dict_set = ['dict_',dataset];                                   
@@ -344,19 +345,19 @@ for iLambda = 1:nLambdas                                                    % ac
         gain     = pinv(R_mm + lambda*eye(size(R_mm)))*M_train{iFold}';     % RLS gain
         g_bar    = gain*Y_train{iFold};                                     % Tikhonov
         g_lasso  = LassoShooting(M_train{iFold},Y_train{iFold},lambda,'verbose',0); % LASSO
-%         g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
+        g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
 % Validation
         PE        = Y_test{iFold} - M_test{iFold}*g_bar;
         PE_lasso  = Y_test{iFold} - M_test{iFold}*g_lasso;
-%         PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
+        PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
         RSS(iLambda,iFold)        = PE'*PE/nData(iFold);
         RSS_lasso(iLambda,iFold)  = PE_lasso'*PE_lasso/nData(iFold);
-%         RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
+        RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
     end
     t_el_osa = toc;
     PRESS(iLambda)       = sum(RSS(iLambda,:));                          
     PRESS_lasso(iLambda) = sum(RSS_lasso(iLambda,:));
-%     PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
+    PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
 %% Update progress log
         fid=fopen([dataset,'_progress_OSA.txt'],'a+');
         temp =  [iLambda; lambda; lambda_g; PRESS_lasso(iLambda); PRESS(iLambda); t_el_osa];
@@ -444,7 +445,7 @@ clear M_train Y_train Q_train_mpo Y_train_mpo times M_test Y_test R_all Q_all
 %% Find optimal regularisation coefficients - CV loop
 [PRESS_min,i_min]       = min(PRESS);
 [PRESS_min_l,i_min_l]   = min(PRESS_lasso);
-% [min_val_spl,i_min_spl] = min(PRESS_spl);
+[min_val_spl,i_min_spl] = min(PRESS_spl);
 [PRESS_min_mpo,i_min_mpo]       = min(PRESS_mpo);
 [PRESS_min_l_mpo,i_min_l_mpo]   = min(PRESS_lasso_mpo);
 [min_val_spl_mpo,i_min_spl_mpo] = min(PRESS_spl_mpo);
@@ -452,23 +453,23 @@ vec     = [0:1/50:1];
 xq      = 10.^(log_min + (log_max-log_min)*vec);
 yq      = [0:0.02:1]';
 [Xq,Yq] = meshgrid(xq,yq);                                                  % create meshgrid
-% Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
+Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
 Z_spgl_mpo  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,Xq,Yq);
 %% Plot spgl PRESS
-% fig('PRESS OSA',visFlag);
-% mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
-% hold on;
-% colormap(my_map)
-% scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
-% plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
-% set(gca,'XScale','log')
-% xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
-% legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
-% print('Spgl_press_osa','-depsc')
-% tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
-% cleanfigure;
-% matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-%             false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
+fig('PRESS OSA',visFlag);
+mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
+hold on;
+colormap(my_map)
+scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
+plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
+set(gca,'XScale','log')
+xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
+legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
+print('Spgl_press_osa','-depsc')
+tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
 fig('PRESS MPO',visFlag);
 mesh(Xq,Yq,Z_spgl_mpo);alpha(0.4);
 hold on;
