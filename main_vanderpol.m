@@ -16,6 +16,7 @@ switch regressors
             dFolder = [dFolder,'_norm'];
         end
         folderName = make_folder(folder,names,dataset,n_y,n_u);             % create results folder
+        dFolder = ['../SYSDYMATS_dictionaries/',dFolder];
         dictFolder = make_folder(dFolder,names,dataset,n_y,n_u);            % create results folder
         d       = n_y + n_u;                                                % size of input vector x
     case 'Delta'
@@ -40,6 +41,7 @@ switch regressors
         end
          names = {'set','lambda'};
          folderName = make_folder(folder,names,dataset,lambda);             % create results folder
+         dFolder = ['../SYSDYMATS_dictionaries/',dFolder];
          dictFolder = make_folder(dFolder,names,dataset,lambda);            % create results folder
          n_u = 1+lambda;
          n_y = 1;
@@ -88,13 +90,21 @@ if ~isempty(y)                                                              % un
        xvCol = x_valid.^powers(iCol,1);
        yvCol = y_valid.^powers(iCol,2);
        A_valid = [A_valid xvCol.*yvCol];
-       A_symb{iCol+1} = ['$x^',num2str(powers(iCol,1)),'$ $y^',num2str(powers(iCol,2)),'$']; 
+       A_symb{iCol+1} = ['$x^{',num2str(powers(iCol,1)),'}$ $y^{',num2str(powers(iCol,2)),'}$'];
+       temp_g = ['xi(1)^(',num2str(powers(iCol,1)),')*xi(2)^(',num2str(powers(iCol,2)),')'];
+       g_model{iCol+1} = inline(temp_g,'xi'); %@(x,power) x(1)^(power(1))*x(2)^(power(2));
+       clear temp_g
    end
 else                                                                        % unknown mapping is a curve
-    nCols =  min(3,K);                                                      % number of terms in the model shouldn't be higher then K
+    powers = [1 2 3 4 -1];
+    nCols =  min(length(powers),K-1);                                       % number of terms in the model shouldn't be higher then K
     for iCol = 1:nCols                                                      % limit order of the model by the number of experimants
-       A = [A x.^(iCol)];
-       A_valid = [A_valid x_valid.^(iCol)];
+       A = [A x.^powers(iCol)];
+       A_valid = [A_valid x_valid.^powers(iCol)];
+       A_symb{iCol+1} = ['$x^{',num2str(powers(iCol)),'}$'];
+       temp_g = ['xi^(',num2str(powers(iCol)),')'];
+       g_model{iCol+1} = inline(temp_g,'xi'); % @(x,power) x^(power);
+       clear temp_g
    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -197,7 +207,7 @@ matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
 %% Create column of names
 for iTerm=1:finalTerm
     temp = arrayfun(@char, significant_term{iTerm}, 'uniform', 0);
-    f_mpo{iTerm} = inline(inline_term{S(iTerm)},'u','y','t');
+    f_model{iTerm} = inline(inline_term{S(iTerm)},'u','y','t');
     if length(temp) > 0
        str = temp{1};
        for iString=2:length(temp)
@@ -272,47 +282,16 @@ for iFile = Files
     t_full(iMpo+1) = length(y_file);
     t_test{iMpo}   = 1:length(y_file); %[(splits-1)*floor(length(y_file)/splits):length(y_file)];
 end
-M_all  = Phi_bar*Kr;  
-[Q_all,R_all] = mgson(M_all);                                               % Orthogonalise M via modified Gram-Schmidt
-% !!!!!!!!!!!! From this point onwards we work with Q_all for
-% cross-validation. We will utilise the R_all for orthogonal solution only after
-% optimal regularisation parameters have been found
-%% Form regression matrices for all time points
-% vectorisation for joint estimation
-I   = eye(finalTerm);                                                       % unit matrix, size NxN
-Kr  = kron(A,I);
-L   = size(A,2);
-p_sparesgroup = [];
-for iBeta = 1:L                                                             % across all design parameter values
-    p_sparesgroup = [p_sparesgroup 1:finalTerm];                            % form groups for CVX sparse group lasso
-end
-p_sparesgroup = p_sparesgroup';
-Phi_bar = [];
-Y_all   = [];
-splits  = 2;                                                                 % split time between training and testing data                       
-iMpo   = 0;
-for iFile = Files
-    fName     = [dictFolder,'/',char(fileNames(iFile))];
-    File      = matfile(fName,'Writable',true);
-    indSign   = S(1:finalTerm);                                             % select the indeces of significant terms from the ordered set
-    Phi_file  = File.term(:,:);                                             % extract all terms into a vector - cannot reorder directly in files
-    y_file    = File.y_narx(:,:);                                           % extract output
-    Phi       = Phi_file(:,indSign);                                        % select only signficant terms
-    Phi_bar   = blkdiag(Phi_bar,Phi);                                       % diagonal block, size TKxNK
-    Y_all     = [Y_all; y_file];                                            % block vector, size TKx1
-    iMpo      = iMpo + 1;
-    t_full(iMpo+1) = length(y_file);
-    t_test{iMpo}   = 1:length(y_file); %[(splits-1)*floor(length(y_file)/splits):length(y_file)];
-end
-M_all  = Phi_bar*Kr;  
-[Q_all,R_all] = mgson(M_all);                                               % Orthogonalise M via modified Gram-Schmidt
+terms_all   = 1:finalTerm*iMpo;
+nFolds      = length(Files);
+Folds       = [1:nFolds];
+times       = 1:length(Y_all);
+M_all       = Phi_bar*Kr;  
+[Q_all,R_all] = mgson(M_all);                                               % orthogonalise M via modified Gram-Schmidt
 % !!!!!!!!!!!! From this point onwards we work with Q_all for
 % cross-validation. We will utilise the R_all for orthogonal solution only after
 % optimal regularisation parameters have been found
 %% Form folds for CV with K-folds
-nFolds = length(Files);
-Folds = [1:nFolds];
-times = 1:length(Y_all);
 cvpart = cvpartition(length(Y_all),'kFold',nFolds);                         % create even-ish partitions for k-folding
 for iFold = 1:nFolds                                                        % over all Folds
     timesTrain{iFold} = times(cvpart.training(iFold));
@@ -327,57 +306,73 @@ end
 fig('MPO CV folds',visFlag);
 for iMpo = 1:length(Files)
     t_train = times;
-    index   = sum(t_full(1:iMpo)) + t_test{iMpo};                           % index of test dataset in the overall time sequence
-    t_train(index) = [];                                                    % remove the points of the testing dataset
+    terms_train = terms_all;
+    indexTimes   = sum(t_full(1:iMpo)) + t_test{iMpo};                      % index of test dataset in the overall time sequence
+    t_train(indexTimes) = [];                                               % remove the points of the testing dataset
+    indexTerms = finalTerm*(iMpo-1) + [1:finalTerm];
+    terms_train(indexTerms) = [];
+    t_test{iMpo} = 1:1300;
+    testTimes   = sum(t_full(1:iMpo)) + t_test{iMpo}; 
+    indexTimes   = sum(t_full(1:iMpo)) + t_test{iMpo};                      % index of test dataset in the overall time sequence
     iFile   = Files(iMpo);
-    Q_train_mpo{iFile}  = M_all(t_train,:);
+    Phi_mpo{iFile} = Phi_bar(t_train,terms_train);
+    M  = Phi_mpo{iFile}*Kr(terms_train,:);
+    [Q_t,R_t] =  mgson(M); % rdqr(M,1e-10);
+    [LSV,SIG,RSV] = svd(M,'econ');
+    LV_train_mpo{iFile} = LSV;
+    SV_train_mpo{iFile} = SIG;
+    RV_train_mpo{iFile} = RSV;
+    Q_train_mpo{iFile} = Q_t;
+    R_train_mpo{iFile} = R_t;
     Y_train_mpo{iFile}  = Y_all(t_train,:); 
     nData_mpo(iFile)    = length(t_test{iMpo});
     plot(t_train,iMpo*ones(size(t_train)),'.g','Linewidth',5); hold on;
-    plot(index,iMpo*ones(size(t_test{iMpo})),'.k','Linewidth',5); hold on;
-    clear t_train
+    plot(indexTimes,iMpo*ones(size(t_test{iMpo})),'.k','Linewidth',5); hold on;
+    clear t_train M Q_t R_t
 end
-xlabel('Indeces'); ylabel('Blocks')
 %% Random search vector
 addpath('LASSO_Shmidt')                                                     % for lasso library
-log_max = 0; log_min = -5; nLambdas = 50;
+log_max = 1; log_min = -5; nLambdas = 70;
 lambdas = [10.^(log_min + (log_max-log_min)*rand(nLambdas,1)) rand(nLambdas,1)];
 L       = size(A,2);
 fid_osa=fopen([dataset,'_progress_OSA.txt'],'w');
-fprintf(fid_osa,'%10s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS','T elapsed');
+fprintf(fid_osa,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','T elapsed');
 fid_mpo=fopen([dataset,'_progress_MPO.txt'],'w');
-fprintf(fid_mpo,'%10s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS','T elapsed');
-writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f\r\n';
+fprintf(fid_mpo,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','T elapsed');
+writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
 %% OSA cross-validation for constrained problems
 if disFlag
    fprintf(['OSA CV... \n'])
 end
-pool =  parpool('local');
+pool = gcp('nocreate');
+if isempty(pool)
+    pool =  parpool('local');
+end
 for iLambda = 1:nLambdas                                                    % across regiularisation coeffs  
     lambda   = lambdas(iLambda,1);                                          % RLS coefficient (from 10^-6 to 1)
     lambda_g = lambdas(iLambda,2);                                          % spasity calibration coefficient (from 0 to 1) 
     tic;
     parfor iFold = 1:nFolds                                                 % across folds 
         R_mm  = M_train{iFold}'*M_train{iFold};
-        gain     = inv(R_mm + lambda*eye(size(R_mm)))*M_train{iFold}';      % RLS gain
+        gain     = pinv(R_mm + lambda*eye(size(R_mm)))*M_train{iFold}';     % RLS gain
         g_bar    = gain*Y_train{iFold};                                     % Tikhonov
         g_lasso  = LassoShooting(M_train{iFold},Y_train{iFold},lambda,'verbose',0); % LASSO
-%         g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
+        g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
 % Validation
         PE        = Y_test{iFold} - M_test{iFold}*g_bar;
         PE_lasso  = Y_test{iFold} - M_test{iFold}*g_lasso;
-%         PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
+        PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
         RSS(iLambda,iFold)        = PE'*PE/nData(iFold);
         RSS_lasso(iLambda,iFold)  = PE_lasso'*PE_lasso/nData(iFold);
-%         RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
+        RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
     end
     t_el_osa = toc;
     PRESS(iLambda)       = sum(RSS(iLambda,:));                          
     PRESS_lasso(iLambda) = sum(RSS_lasso(iLambda,:));
-%     PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
+    PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
 %% Update progress log
         fid=fopen([dataset,'_progress_OSA.txt'],'a+');
-        temp =  [iLambda; lambda; lambda_g; PRESS_lasso(iLambda); t_el_osa];
+        temp =  [iLambda; lambda; lambda_g; PRESS_lasso(iLambda); PRESS(iLambda); t_el_osa];
         fprintf(fid, writeFormat,temp);
         fclose(fid);
         clear temp fid
@@ -396,13 +391,22 @@ for iLambda = 1:nLambdas                                                    % ac
     parfor  iMpo =1:length(Files) % for MPO - instead of folds loop over files. 
         iFile    = Files(iMpo); % counter to go through design parameter matrix
         R_mm     = Q_train_mpo{iFile}'*Q_train_mpo{iFile};
-        gain     = inv(R_mm + lambda*eye(size(R_mm)))*Q_train_mpo{iFile}';         % RLS gain
-        g_bar    = gain*Y_train_mpo{iFile};                                        % Tikhonov
+        gain     = pinv(R_mm + lambda*eye(size(R_mm)))*Q_train_mpo{iFile}'; % RLS gain
+        g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
         g_lasso  = LassoShooting(Q_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
         g_spl    = SPLAsso(Y_train_mpo{iFile}, Q_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
-        Betas_tikh   = reshape(g_bar); % reshape(linsolve(R_all,g_bar,struct('UT', true)),[finalTerm L]); 
-        Betas_lass   = reshape(g_lasso); %reshape(linsolve(R_all,g_lasso,struct('UT', true)),[finalTerm L]);  
-        Betas_spgl   = reshape(g_spl); %reshape(linsolve(R_all,g_spl,struct('UT', true)),[finalTerm L]);  
+        Betas_tikh   = reshape(linsolve(R_train_mpo{iFile},g_bar,struct('UT', true)),[finalTerm L]); 
+        Betas_lass   = reshape(linsolve(R_train_mpo{iFile},g_lasso,struct('UT', true)),[finalTerm L]);
+        Betas_spgl   = reshape(linsolve(R_train_mpo{iFile},g_spl,struct('UT', true)),[finalTerm L]); 
+% Try with SVD
+%         R_mm     = LV_train_mpo{iFile}'*LV_train_mpo{iFile};
+%         gain     = pinv(R_mm + lambda*eye(size(R_mm)))*LV_train_mpo{iFile}'; % RLS gain
+%         g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
+%         g_lasso  = LassoShooting(LV_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
+%         g_spl    = SPLAsso(Y_train_mpo{iFile}, LV_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
+%         Betas_tikh   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_bar,[finalTerm L]); 
+%         Betas_lass   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_lasso,[finalTerm L]);  
+%         Betas_spgl   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_spl,[finalTerm L]);  
         Theta_tikh{iMpo}  = Betas_tikh*A(iMpo,:)';
         Theta_lass{iMpo}  = Betas_lass*A(iMpo,:)';
         Theta_spgl{iMpo}  = Betas_spgl*A(iMpo,:)';
@@ -418,11 +422,11 @@ for iLambda = 1:nLambdas                                                    % ac
         y_mpo_lasso = y_mpo;
         y_mpo_spgl  = y_mpo;
         u_mpo = File.u_narx(t_test{iMpo},1);
-        for t=n_y+1:nData_mpo(iFile)
+        for t=n_y+1:500 % nData_mpo(iFile)
             for iTerm=1:finalTerm
-                x_mpo(iTerm)        = f_mpo{iTerm}(u_mpo,y_mpo,t);
-                x_mpo_lasso(iTerm)  = f_mpo{iTerm}(u_mpo,y_mpo_lasso,t);
-                x_mpo_spgl(iTerm)   = f_mpo{iTerm}(u_mpo,y_mpo_spgl,t);
+                x_mpo(iTerm)        = f_model{iTerm}(u_mpo,y_mpo,t);
+                x_mpo_lasso(iTerm)  = f_model{iTerm}(u_mpo,y_mpo_lasso,t);
+                x_mpo_spgl(iTerm)   = f_model{iTerm}(u_mpo,y_mpo_spgl,t);
             end
             y_mpo(t)        = x_mpo*Theta_tikh{iMpo};
             y_mpo_lasso(t)  = x_mpo_lasso*Theta_lass{iMpo};
@@ -440,7 +444,7 @@ for iLambda = 1:nLambdas                                                    % ac
     PRESS_spl_mpo(iLambda)   = sum(RSS_spl_mpo(iLambda,:));
 %% Update progress log
         fid=fopen([dataset,'_progress_MPO.txt'],'a+');
-        temp =  [iLambda; lambda; lambda_g; PRESS_spl_mpo(iLambda); t_el_mpo];
+        temp =  [iLambda; lambda; lambda_g; PRESS_lasso_mpo(iLambda); PRESS_mpo(iLambda); t_el_mpo];
         fprintf(fid, writeFormat,temp);
         fclose(fid);
         clear temp fid
@@ -449,35 +453,35 @@ for iLambda = 1:nLambdas                                                    % ac
     end
 end
 delete(pool);
-clear M_train Y_train Q_train_mpo Y_train_mpo times M_test Y_test 
+clear M_train Y_train Q_train_mpo Y_train_mpo times M_test Y_test R_all Q_all
 %% Find optimal regularisation coefficients - CV loop
 [PRESS_min,i_min]       = min(PRESS);
 [PRESS_min_l,i_min_l]   = min(PRESS_lasso);
-% [min_val_spl,i_min_spl] = min(PRESS_spl);
+[min_val_spl,i_min_spl] = min(PRESS_spl);
 [PRESS_min_mpo,i_min_mpo]       = min(PRESS_mpo);
 [PRESS_min_l_mpo,i_min_l_mpo]   = min(PRESS_lasso_mpo);
 [min_val_spl_mpo,i_min_spl_mpo] = min(PRESS_spl_mpo);
 vec     = [0:1/50:1];
 xq      = 10.^(log_min + (log_max-log_min)*vec);
 yq      = [0:0.02:1]';
-[Xq,Yq] = meshgrid(xq,yq);                                  % create meshgrid
-% Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
+[Xq,Yq] = meshgrid(xq,yq);                                                  % create meshgrid
+Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
 Z_spgl_mpo  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,Xq,Yq);
 %% Plot spgl PRESS
-% fig('PRESS OSA',visFlag);
-% mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
-% hold on;
-% colormap(my_map)
-% scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
-% plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
-% set(gca,'XScale','log')
-% xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
-% legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
-% print('Spgl_press_osa','-depsc')
-% tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
-% cleanfigure;
-% matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-%             false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
+fig('PRESS OSA',visFlag);
+mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
+hold on;
+colormap(my_map)
+scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
+plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
+set(gca,'XScale','log')
+xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
+legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
+print('Spgl_press_osa','-depsc')
+tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
 fig('PRESS MPO',visFlag);
 mesh(Xq,Yq,Z_spgl_mpo);alpha(0.4);
 hold on;
@@ -492,7 +496,6 @@ tikzName = [folderName,'/PRESS_spgl_mpo.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
-
 %% Plot ridge and lasso PRESS     
 fig('PRESS',visFlag);
 subplot(2,2,1);
@@ -530,30 +533,48 @@ cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '5cm', 'width','12cm','checkForUpdates',false);
 %% Estimate parameters with optimal regularisation coefficient
+[Q_all, R_all] =   mgson(M_all); % rdqr(M_all,1e-10); %
 g_bar   = Q_all\Y_all;
 B_bar   = linsolve(R_all,g_bar,struct('UT', true)); 
 Betas_nonreg_opt  = reshape(B_bar,[finalTerm,L]);
 %% Simple regularisation
-lambda_opt          = lambdas(i_min,1);
-lambda_lasso_opt    = lambdas(i_min_l,1);
-lambda_opt_mpo      = lambdas(i_min_mpo,1);
-lambda_lasso_opt_mpo = lambdas(i_min_l_mpo,1);
+lambda_opt = lambdas(i_min,1);
+lambda_lasso_opt = lambdas(i_min_l,1);
+lambda_opt_mpo = lambdas(i_min_mpo,1);
+lambda_lasso_opt_mpo = lambdas(i_min_l,1);
 R_mm    = Q_all'*Q_all;
-gain    = inv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*Q_all';                    % RLS gain
+gain    = pinv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*Q_all';               % RLS gain
 g_tikh  = gain*Y_all;
-B_tikh  = linsolve(R_all,g_tikh,struct('UT', true)); 
-g_lasso =  LassoShooting(Q_all,Y_all,lambda_lasso_opt_mpo,'verbose',0);
-B_lasso = linsolve(R_all,g_lasso,struct('UT', true)); 
+B_tikh   = linsolve(R_all,g_tikh,struct('UT', true)); 
+g_lasso =  LassoShooting(Q_all,Y_all,lambda_lasso_opt,'verbose',0);
+B_lasso   = linsolve(R_all,g_lasso,struct('UT', true)); 
 Betas_tikh_opt  = reshape(B_tikh,[finalTerm,L]);
 Betas_lasso_opt = reshape(B_lasso,[finalTerm,L]);
+lambda_spl_opt = lambdas(i_min_spl,1);
+alpha_spl_opt = lambdas(i_min_spl,2);
+g_spl  = SPLAsso(Y_all, Q_all, p_sparesgroup, (1-alpha_spl_opt)*lambda_spl_opt, alpha_spl_opt*lambda_spl_opt); 
+B_spgl  = linsolve(R_all,g_spl,struct('UT', true)); 
+Betas_spl_opt = reshape(B_spgl,[finalTerm L]);  
+
+%% Regularisation using SVD
+% [LV_all,SV_all,RV_all] = svd(M_all,'econ');
+% g_bar   = LV_all\Y_all;
+% Betas_nonreg_opt  = reshape(RV_all*pinv(SV_all)*g_bar,[finalTerm,L]);
+% R_mm     = LV_all'*LV_all;
+% gain     = pinv(R_mm + lambda_opt_mpo*eye(size(R_mm)))*LV_all'; % RLS gain
+% g_tikh    = gain*Y_all;                                 % Tikhonov
+% g_lasso  = LassoShooting(LV_all,Y_all,lambda_lasso_opt_mpo,'verbose',0); % LASSO
+% Betas_tikh_opt   = reshape(RV_all*pinv(SV_all)*g_tikh,[finalTerm L]); 
+% Betas_lasso_opt   = reshape(RV_all*pinv(SV_all)*g_lasso,[finalTerm L]);  
 %% Sparse group lasso
 % lambda_spl_opt = lambdas(i_min_spl,1);
 % alpha_spl_opt = lambdas(i_min_spl,2);
-lambda_spl_mpo = lambdas(i_min_spl_mpo,1);
-alpha_spl_mpo = lambdas(i_min_spl_mpo,2);
-g_spl  = SPLAsso(Y_all, Q_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
-B_spl   = linsolve(R_all,g_spl,struct('UT', true)); 
-Betas_spl_opt = reshape(B_spl,[finalTerm,L]);
+% lambda_spl_mpo = lambdas(i_min_spl_mpo,1);
+% alpha_spl_mpo = lambdas(i_min_spl_mpo,2);
+% % addpath('../MATLAB/cvx');
+% % cvx_setup 
+% g_spl  = SPLAsso(Y_all, LV_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
+% Betas_spl_opt = reshape(RV_all*pinv(SV_all)*g_spl,[finalTerm L]);  
 %% display estimates
 if disFlag
     Betas_nonreg_opt
@@ -562,12 +583,13 @@ if disFlag
     Betas_spl_opt
 end
 %% Save all workspace
-foName = ['../SYSDYMATS_data/results/',folderName]
-make_folder(foName)
+foName = ['../SYSDYMATS_data/results/',folderName];
+name = make_folder(foName);
 fiName = [foName,'/','Contrained_estimation_resullts'];
 save(fiName);
-fiYunpeng  = ['Results_for_Yunpeng_',dataset];
-save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','Betas_spl_opt','A','A_valid','Files','testFiles','A_symb','f_mpo','Terms');
+fiYunpeng  = ['Results_for_Yunpeng_spgl',dataset];
+extParams  = values;
+save(fiYunpeng,'Betas_nonreg_opt','Betas_spl_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
 %% Saving external parameters to table
 clear Tab
 Tab = table(Step,Terms);
@@ -612,7 +634,7 @@ else
     L1 = 1;
 end
 L2 = round(length(testFiles)/L1);
-index_test  = 1:3000;
+index_test  = 1:800;
 index_plot  = 1:length(index_test);
 %% Validate unconstrained
 Theta_test  = Betas_nonreg_opt*A_valid';
@@ -626,23 +648,23 @@ for iFile = testFiles
     Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
     Phi     = Phi_all(:,indSign);                                           % select only signficant terms
     iTheta  = iTheta + 1;
-    y_osa   = Phi*Theta_test(:,iTheta);                                      % model NARMAX output
-    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));    % Root Mean Squared Error
+    y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % RMSE
 % MPO prediction
     y_mpo = File.y_narx(index_test,1);
     u_mpo = File.u_narx(index_test,1);
     for t=n_y+1:index_test(end)
         for iTerm=1:finalTerm
-            x_mpo(iTerm) = f_mpo{iTerm}(u_mpo,y_mpo,t);
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
         end
         y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
     end
     RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
 % Compare outputs
     subplot(L2,L1,iTheta);
-    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',3); hold on;
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'--','LineWidth',1); hold on;
     legend('True output','OSA predition','MPO prediction');
     xlabel('Sample index'); ylabel(['$',y_str,'$']);
     title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
@@ -651,7 +673,7 @@ end
 tikzName = [folderName,'/','OLS_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-            false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
+            false, 'height', '15cm', 'width','15cm','checkForUpdates',false);
 %% Validate lasso reg
 Theta_test  = Betas_lasso_opt*A_valid';
 iTheta      = 0;
@@ -664,23 +686,23 @@ for iFile = testFiles
     Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
     Phi     = Phi_all(:,indSign);                                           % select only signficant terms
     iTheta  = iTheta + 1;
-    y_osa   = Phi*Theta_test(:,iTheta);                                      % model NARMAX output
-    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));    % Root Mean Squared Error
+    y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % Root Mean Squared Error
 % MPO prediction
     y_mpo = File.y_narx(index_test,1);
     u_mpo = File.u_narx(index_test,1);
     for t=n_y+1:index_test(end)
         for iTerm=1:finalTerm
-            x_mpo(iTerm) = f_mpo{iTerm}(u_mpo,y_mpo,t);
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
         end
         y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
     end
     RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
 % Compare outputs
     subplot(L2,L1,iTheta);
-    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',3); hold on;
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'--','LineWidth',1); hold on;
     legend('True output','OSA predition','MPO prediction');
     xlabel('Sample index'); ylabel(['$',y_str,'$']);
     title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
@@ -703,23 +725,23 @@ for iFile = testFiles
     Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
     Phi     = Phi_all(:,indSign);                                           % select only signficant terms
     iTheta  = iTheta + 1;
-    y_osa   = Phi*Theta_test(:,iTheta);                                      % model NARMAX output
-    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));    % Root Mean Squared Error
+    y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % Root Mean Squared Error
 % MPO prediction
     y_mpo = File.y_narx(index_test,1);
     u_mpo = File.u_narx(index_test,1);
     for t=n_y+1:index_test(end)
         for iTerm=1:finalTerm
-            x_mpo(iTerm) = f_mpo{iTerm}(u_mpo,y_mpo,t);
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
         end
         y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
     end
     RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
 % Compare outputs
     subplot(L2,L1,iTheta);
-    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',3); hold on;
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',1); hold on;
     legend('True output','OSA predition','MPO prediction');
     xlabel('Sample index'); ylabel(['$',y_str,'$']);
     title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
@@ -728,7 +750,7 @@ end
 tikzName = [folderName,'/','Sparse_lasso_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-            false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
+            false, 'height', '15cm', 'width','15cm','checkForUpdates',false);
 %% Validate Tikhonov reg
 Theta_test  = Betas_tikh_opt*A_valid';
 iTheta = 0;
@@ -741,23 +763,23 @@ for iFile = testFiles
     Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
     Phi     = Phi_all(:,indSign);                                           % select only signficant terms
     iTheta  = iTheta + 1;
-    y_osa   = Phi*Theta_test(:,iTheta);                                      % model NARMAX output
-    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));    % Root Mean Squared Error
+    y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % RMSE
 % MPO prediction
     y_mpo = File.y_narx(index_test,1);
     u_mpo = File.u_narx(index_test,1);
     for t=n_y+1:index_test(end)
         for iTerm=1:finalTerm
-            x_mpo(iTerm) = f_mpo{iTerm}(u_mpo,y_mpo,t);
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
         end
         y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
     end
     RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
 % Compare outputs
-    subplot(L1,L2,iTheta);
-    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',2); hold on;
-    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',3); hold on;
+ subplot(L2,L1,iTheta);
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',1); hold on;
     legend('True output','OSA predition','MPO prediction');
     xlabel('Sample index'); ylabel(['$',y_str,'$']);
     title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
@@ -766,4 +788,4 @@ end
 tikzName = [folderName,'/','Tikhonov_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-            false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
+            false, 'height', '15cm', 'width','15cm','checkForUpdates',false);

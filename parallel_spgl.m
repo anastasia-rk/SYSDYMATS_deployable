@@ -29,20 +29,20 @@ switch foamset
             eps = 0.00005;
     end 
     case 'sweep_2020'
-         Files = [1 2 3 5];
-         testFiles  = [1 3 4 6];       
+         Files = [1 3 4 5 6];
+         testFiles  = [1 2 4 5];       
 end
 folder = 'results_cv';                                                      % specify category where to save files
 dFolder = 'dictionaries';
 metaFileName = ['Meta_',dataset];
 load(metaFileName);
 names = {'set','ny','nu'};                                                  % names used to define results folder name (no more than 3).
-if normC ~= 1
+if normC ~= 1 || center
     folder = [folder,'_norm'];
     dFolder = [dFolder,'_norm'];
 end
 folderName = make_folder(folder,names,dataset,n_y,n_u);                     % create results folder
-dFolder = ['SYSDYMATS_dictionaries/',dFolder];
+dFolder = ['../SYSDYMATS_dictionaries/',dFolder];
 dictFolder = make_folder(dFolder,names,dataset,n_y,n_u);                    % create results folder
 d       = n_y + n_u;                                                        % size of input vector x
 dict_set = ['dict_',dataset];                                   
@@ -68,7 +68,7 @@ end
 A = ones(size(x));                                                          % create unit vector for constants in design matrix
 A_valid = ones(size(x_valid));                                              % create unit vector for constants in validation matrix 
 A_symb{1} = '1';
-g_model{1} = @(x,y) 1;
+g_model{1} = inline('1','xi');
 if ~isempty(y)                                                              % unknown mapping is a surface
    powers = permn(0:2,2);                                                   % permuntations of all 
    powers = powers(2:end,:);    
@@ -80,17 +80,21 @@ if ~isempty(y)                                                              % un
        xvCol = x_valid.^powers(iCol,1);
        yvCol = y_valid.^powers(iCol,2);
        A_valid = [A_valid xvCol.*yvCol];
-       A_symb{iCol+1} = ['$x^',num2str(powers(iCol,1)),'$ $y^',num2str(powers(iCol,2)),'$']; 
-       g_model{iCol+1} = @(x,y) x^(powers(iCol,1))*y(powers(iCol,2));
+       A_symb{iCol+1} = ['$x^{',num2str(powers(iCol,1)),'}$ $y^{',num2str(powers(iCol,2)),'}$'];
+       temp_g = ['xi(1)^(',num2str(powers(iCol,1)),')*xi(2)^(',num2str(powers(iCol,2)),')'];
+       g_model{iCol+1} = inline(temp_g,'xi'); %@(x,power) x(1)^(power(1))*x(2)^(power(2));
+       clear temp_g
    end
 else                                                                        % unknown mapping is a curve
-    powers = [1 2 3 -1 -2];
+    powers = [1 2 3 4 -1];
     nCols =  min(length(powers),K-1);                                       % number of terms in the model shouldn't be higher then K
     for iCol = 1:nCols                                                      % limit order of the model by the number of experimants
        A = [A x.^powers(iCol)];
        A_valid = [A_valid x_valid.^powers(iCol)];
        A_symb{iCol+1} = ['$x^{',num2str(powers(iCol)),'}$'];
-       g_model{iCol+1} = @(x) x^(powers(iCol));
+       temp_g = ['xi^(',num2str(powers(iCol)),')'];
+       g_model{iCol+1} = inline(temp_g,'xi'); % @(x,power) x^(power);
+       clear temp_g
    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -341,19 +345,19 @@ for iLambda = 1:nLambdas                                                    % ac
         gain     = pinv(R_mm + lambda*eye(size(R_mm)))*M_train{iFold}';     % RLS gain
         g_bar    = gain*Y_train{iFold};                                     % Tikhonov
         g_lasso  = LassoShooting(M_train{iFold},Y_train{iFold},lambda,'verbose',0); % LASSO
-%         g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
+        g_spl    = SPLAsso(Y_train{iFold}, M_train{iFold}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
 % Validation
         PE        = Y_test{iFold} - M_test{iFold}*g_bar;
         PE_lasso  = Y_test{iFold} - M_test{iFold}*g_lasso;
-%         PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
+        PE_spl    = Y_test{iFold} - M_test{iFold}*g_spl;
         RSS(iLambda,iFold)        = PE'*PE/nData(iFold);
         RSS_lasso(iLambda,iFold)  = PE_lasso'*PE_lasso/nData(iFold);
-%         RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
+        RSS_spl(iLambda,iFold)    = PE_spl'*PE_spl/nData(iFold);
     end
     t_el_osa = toc;
     PRESS(iLambda)       = sum(RSS(iLambda,:));                          
     PRESS_lasso(iLambda) = sum(RSS_lasso(iLambda,:));
-%     PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
+    PRESS_spl(iLambda)   = sum(RSS_spl(iLambda,:));
 %% Update progress log
         fid=fopen([dataset,'_progress_OSA.txt'],'a+');
         temp =  [iLambda; lambda; lambda_g; PRESS_lasso(iLambda); PRESS(iLambda); t_el_osa];
@@ -381,18 +385,19 @@ for iLambda = 1:nLambdas                                                    % ac
 %         g_spl    = SPLAsso(Y_train_mpo{iFile}, Q_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
 %         Betas_tikh   = reshape(linsolve(R_train_mpo{iFile},g_bar,struct('UT', true)),[finalTerm L]); 
 %         Betas_lass   = reshape(linsolve(R_train_mpo{iFile},g_lasso,struct('UT', true)),[finalTerm L]);
+%         Betas_spgl   = reshape(linsolve(R_train_mpo{iFile},g_spl,struct('UT', true)),[finalTerm L]); 
 % Try with SVD
         R_mm     = LV_train_mpo{iFile}'*LV_train_mpo{iFile};
         gain     = pinv(R_mm + lambda*eye(size(R_mm)))*LV_train_mpo{iFile}'; % RLS gain
         g_bar    = gain*Y_train_mpo{iFile};                                 % Tikhonov
         g_lasso  = LassoShooting(LV_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
+        g_spl    = SPLAsso(Y_train_mpo{iFile}, LV_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
         Betas_tikh   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_bar,[finalTerm L]); 
         Betas_lass   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_lasso,[finalTerm L]);  
-
-%         Betas_spgl   = reshape(linsolve(R_train_mpo{iFile},g_spl,struct('UT', true)),[finalTerm L]);  
+        Betas_spgl   = reshape(RV_train_mpo{iFile}*pinv(SV_train_mpo{iFile})*g_spl,[finalTerm L]);  
         Theta_tikh{iMpo}  = Betas_tikh*A(iMpo,:)';
         Theta_lass{iMpo}  = Betas_lass*A(iMpo,:)';
-%         Theta_spgl{iMpo}  = Betas_spgl*A(iMpo,:)';
+        Theta_spgl{iMpo}  = Betas_spgl*A(iMpo,:)';
     end
     t_el_mpo = toc;
 % MPO validation
@@ -403,28 +408,28 @@ for iLambda = 1:nLambdas                                                    % ac
         File    = matfile(fName,'Writable',true);
         y_mpo   = File.y_narx(t_test{iMpo},1);
         y_mpo_lasso = y_mpo;
-%         y_mpo_spgl  = y_mpo;
+        y_mpo_spgl  = y_mpo;
         u_mpo = File.u_narx(t_test{iMpo},1);
-        for t=n_y+1:1000 % nData_mpo(iFile)
+        for t=n_y+1:500 % nData_mpo(iFile)
             for iTerm=1:finalTerm
                 x_mpo(iTerm)        = f_model{iTerm}(u_mpo,y_mpo,t);
                 x_mpo_lasso(iTerm)  = f_model{iTerm}(u_mpo,y_mpo_lasso,t);
-%                 x_mpo_spgl(iTerm)   = f_model{iTerm}(u_mpo,y_mpo_spgl,t);
+                x_mpo_spgl(iTerm)   = f_model{iTerm}(u_mpo,y_mpo_spgl,t);
             end
             y_mpo(t)        = x_mpo*Theta_tikh{iMpo};
             y_mpo_lasso(t)  = x_mpo_lasso*Theta_lass{iMpo};
-%             y_mpo_spgl(t)   = x_mpo_spgl*Theta_spgl{iMpo};
+            y_mpo_spgl(t)   = x_mpo_spgl*Theta_spgl{iMpo};
         end
         PE_mpo        = File.y_narx(t_test{iMpo},1) - y_mpo;
         PE_lasso_mpo  = File.y_narx(t_test{iMpo},1) - y_mpo_lasso;
-%         PE_spl_mpo    = File.y_narx(t_test{iMpo},1) - y_mpo_spgl;
+        PE_spl_mpo    = File.y_narx(t_test{iMpo},1) - y_mpo_spgl;
         RSS_mpo(iLambda,iMpo)        = PE_mpo'*PE_mpo/nData_mpo(iFile);
         RSS_lasso_mpo(iLambda,iMpo)  = PE_lasso_mpo'*PE_lasso_mpo/nData_mpo(iFile);
-%         RSS_spl_mpo(iLambda,iMpo)    = PE_spl_mpo'*PE_spl_mpo/nData_mpo(iFile);
+        RSS_spl_mpo(iLambda,iMpo)    = PE_spl_mpo'*PE_spl_mpo/nData_mpo(iFile);
     end
     PRESS_mpo(iLambda)       = sum(RSS_mpo(iLambda,:));                          
     PRESS_lasso_mpo(iLambda) = sum(RSS_lasso_mpo(iLambda,:));
-%     PRESS_spl_mpo(iLambda)   = sum(RSS_spl_mpo(iLambda,:));
+    PRESS_spl_mpo(iLambda)   = sum(RSS_spl_mpo(iLambda,:));
 %% Update progress log
         fid=fopen([dataset,'_progress_MPO.txt'],'a+');
         temp =  [iLambda; lambda; lambda_g; PRESS_lasso_mpo(iLambda); PRESS_mpo(iLambda); t_el_mpo];
@@ -440,45 +445,45 @@ clear M_train Y_train Q_train_mpo Y_train_mpo times M_test Y_test R_all Q_all
 %% Find optimal regularisation coefficients - CV loop
 [PRESS_min,i_min]       = min(PRESS);
 [PRESS_min_l,i_min_l]   = min(PRESS_lasso);
-% [min_val_spl,i_min_spl] = min(PRESS_spl);
+[min_val_spl,i_min_spl] = min(PRESS_spl);
 [PRESS_min_mpo,i_min_mpo]       = min(PRESS_mpo);
 [PRESS_min_l_mpo,i_min_l_mpo]   = min(PRESS_lasso_mpo);
-% [min_val_spl_mpo,i_min_spl_mpo] = min(PRESS_spl_mpo);
+[min_val_spl_mpo,i_min_spl_mpo] = min(PRESS_spl_mpo);
 vec     = [0:1/50:1];
 xq      = 10.^(log_min + (log_max-log_min)*vec);
 yq      = [0:0.02:1]';
 [Xq,Yq] = meshgrid(xq,yq);                                                  % create meshgrid
-% Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
-% Z_spgl_mpo  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,Xq,Yq);
+Z_spgl_osa  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl,Xq,Yq);
+Z_spgl_mpo  = griddata(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,Xq,Yq);
 %% Plot spgl PRESS
-% fig('PRESS OSA',visFlag);
-% mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
-% hold on;
-% colormap(my_map)
-% scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
-% plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
-% set(gca,'XScale','log')
-% xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
-% legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
-% print('Spgl_press_osa','-depsc')
-% tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
-% cleanfigure;
-% matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-%             false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
-% fig('PRESS MPO',visFlag);
-% mesh(Xq,Yq,Z_spgl_mpo);alpha(0.4);
-% hold on;
-% colormap(my_map)
-% scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,'filled');
-% plot3(lambdas(i_min_spl_mpo,1),lambdas(i_min_spl_mpo,2),min_val_spl_mpo,'*','Linewidth',5);
-% set(gca,'XScale','log')
-% xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
-% legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
-% print('Spgl_press_mpo','-depsc')
-% tikzName = [folderName,'/PRESS_spgl_mpo.tikz'];
-% cleanfigure;
-% matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-%             false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
+fig('PRESS OSA',visFlag);
+mesh(Xq,Yq,Z_spgl_osa);alpha(0.4);
+hold on;
+colormap(my_map)
+scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl,'filled');
+plot3(lambdas(i_min_spl,1),lambdas(i_min_spl,2),min_val_spl,'*','Linewidth',5);
+set(gca,'XScale','log')
+xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
+legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
+print('Spgl_press_osa','-depsc')
+tikzName = [folderName,'/PRESS_spgl_osa.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
+fig('PRESS MPO',visFlag);
+mesh(Xq,Yq,Z_spgl_mpo);alpha(0.4);
+hold on;
+colormap(my_map)
+scatter3(lambdas(:,1),lambdas(:,2),PRESS_spl_mpo,'filled');
+plot3(lambdas(i_min_spl_mpo,1),lambdas(i_min_spl_mpo,2),min_val_spl_mpo,'*','Linewidth',5);
+set(gca,'XScale','log')
+xlabel('$\gamma$');ylabel('$\alpha$');zlabel('PRESS');
+legend('Interpolated PRESS','RS points','Minimum','Location','northwest')
+print('Spgl_press_mpo','-depsc')
+tikzName = [folderName,'/PRESS_spgl_mpo.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '10cm', 'width','10cm','checkForUpdates',false);
 %% Plot ridge and lasso PRESS     
 fig('PRESS',visFlag);
 subplot(2,2,1);
@@ -546,27 +551,27 @@ Betas_lasso_opt   = reshape(RV_all*pinv(SV_all)*g_lasso,[finalTerm L]);
 %% Sparse group lasso
 % lambda_spl_opt = lambdas(i_min_spl,1);
 % alpha_spl_opt = lambdas(i_min_spl,2);
-% lambda_spl_mpo = lambdas(i_min_spl_mpo,1);
-% alpha_spl_mpo = lambdas(i_min_spl_mpo,2);
+lambda_spl_mpo = lambdas(i_min_spl_mpo,1);
+alpha_spl_mpo = lambdas(i_min_spl_mpo,2);
 % addpath('../MATLAB/cvx');
 % cvx_setup 
-% g_spl  = SPLAsso(Y_all, Q_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
-% B_spl   = linsolve(R_all,g_spl,struct('UT', true)); 
-% Betas_spl_opt = reshape(B_spl,[finalTerm,L]);
+g_spl  = SPLAsso(Y_all, LV_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
+Betas_spl_opt = reshape(RV_all*pinv(SV_all)*g_spl,[finalTerm L]);  
 %% display estimates
 if disFlag
     Betas_nonreg_opt
     Betas_tikh_opt
     Betas_lasso_opt
-%     Betas_spl_opt
+    Betas_spl_opt
 end
 %% Save all workspace
 foName = ['../SYSDYMATS_data/results/',folderName];
+name = make_folder(foName);
 fiName = [foName,'/','Contrained_estimation_resullts'];
-close all; save(fiName);
-fiYunpeng  = ['Results_for_Yunpeng_',dataset];
+save(fiName);
+fiYunpeng  = ['Results_for_Yunpeng_spgl',dataset];
 extParams  = values;
-save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
+save(fiYunpeng,'Betas_nonreg_opt','Betas_spl_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
 %% Saving external parameters to table
 clear Tab
 Tab = table(Step,Terms);
@@ -596,14 +601,14 @@ end
 tableName = [folderName,'/Betas_lasso'];
 table2latex(Tab,tableName);
 clear Tab
-% Tab = table(Step,Terms);
-% for iBeta=1:L
-%     Parameters = round(Betas_spl_opt(:,iBeta),8);
-%     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
-%     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
-% end
-% tableName = [folderName,'/Betas_sparse_group'];
-% table2latex(Tab,tableName);
+Tab = table(Step,Terms);
+for iBeta=1:L
+    Parameters = round(Betas_spl_opt(:,iBeta),8);
+    varName = ['$\beta_{',num2str(iBeta-1),'}$'];
+    Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
+end
+tableName = [folderName,'/Betas_sparse_group'];
+table2latex(Tab,tableName);
 %% For validation plots
 if length(testFiles) > 1
     L1 = 2;
@@ -691,43 +696,43 @@ cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
 %% Validate sparse group lasso
-% Theta_test  = Betas_spl_opt*A_valid'; % Betas_nonortspl_opt*A_valid'; %
-% iTheta      = 0;
-% fig('Validation SPGL',visFlag);
-% for iFile = testFiles
-% % OSA prediction
-%     fName   = [dictFolder,'/dict_',dataset,num2str(iFile)];
-%     File    = matfile(fName,'Writable',true);
-%     indSign = S(1:finalTerm);                                               % select the indeces of significant terms from the ordered set
-%     Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
-%     Phi     = Phi_all(:,indSign);                                           % select only signficant terms
-%     iTheta  = iTheta + 1;
-%     y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
-%     RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % Root Mean Squared Error
-% % MPO prediction
-%     y_mpo = File.y_narx(index_test,1);
-%     u_mpo = File.u_narx(index_test,1);
-%     for t=n_y+1:index_test(end)
-%         for iTerm=1:finalTerm
-%             x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
-%         end
-%         y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
-%     end
-%     RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
-% % Compare outputs
-%     subplot(L2,L1,iTheta);
-%     plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
-%     plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
-%     plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',1); hold on;
-%     legend('True output','OSA predition','MPO prediction');
-%     xlabel('Sample index'); ylabel(['$',y_str,'$']);
-%     title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
-%  clear File Phi_all Phi y_model
-% end
-% tikzName = [folderName,'/','Sparse_lasso_validation.tikz'];
-% cleanfigure;
-% matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
-%             false, 'height', '15cm', 'width','15cm','checkForUpdates',false);
+Theta_test  = Betas_spl_opt*A_valid'; % Betas_nonortspl_opt*A_valid'; %
+iTheta      = 0;
+fig('Validation SPGL',visFlag);
+for iFile = testFiles
+% OSA prediction
+    fName   = [dictFolder,'/dict_',dataset,num2str(iFile)];
+    File    = matfile(fName,'Writable',true);
+    indSign = S(1:finalTerm);                                               % select the indeces of significant terms from the ordered set
+    Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
+    Phi     = Phi_all(:,indSign);                                           % select only signficant terms
+    iTheta  = iTheta + 1;
+    y_osa   = Phi*Theta_test(:,iTheta);                                     % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));  % Root Mean Squared Error
+% MPO prediction
+    y_mpo = File.y_narx(index_test,1);
+    u_mpo = File.u_narx(index_test,1);
+    for t=n_y+1:index_test(end)
+        for iTerm=1:finalTerm
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
+        end
+        y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
+    end
+    RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
+% Compare outputs
+    subplot(L2,L1,iTheta);
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',1); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),'.','LineWidth',1); hold on;
+    legend('True output','OSA predition','MPO prediction');
+    xlabel('Sample index'); ylabel(['$',y_str,'$']);
+    title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
+ clear File Phi_all Phi y_model
+end
+tikzName = [folderName,'/','Sparse_lasso_validation.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '15cm', 'width','15cm','checkForUpdates',false);
 %% Validate Tikhonov reg
 Theta_test  = Betas_tikh_opt*A_valid';
 iTheta = 0;

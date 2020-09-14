@@ -73,6 +73,7 @@ lambda_p = 3;
 n_u = 1+lambda;
 n_y = lambda;% order of polynomial
 names = {'set','lambda'};                                                   % names used to define results folder name (no more than 3).
+folder = ['../SYSDYMATS_dictionaries/',folder];
 folderName = make_folder(folder,names,dataset,lambda);                      % create results folder
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create string array of input vector
