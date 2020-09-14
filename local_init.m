@@ -24,7 +24,7 @@ for iDir=git:N
     end
 end
 %% Figure and interpreter setup
-clear all; my_init;
+my_init;
 visFlag = 'On'; %% or 'Off'
 disFlag = true; % set to false to prevent from displaying updates in work space
 %% CVX setup for SHARC - have to call every time

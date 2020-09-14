@@ -1,6 +1,6 @@
 clear all; local_init;
-foamset = 'foam_2020';
-dataset = 'VS';
+foamset = 'foam_2010';
+dataset = 'C';
 %%
 switch foamset
     case 'foam_2010'

@@ -70,10 +70,17 @@ if n_y~=0
       iStr = iStr + 1;
    end
 end
+ %Exclude u(t)
 for it=n_u:-1:1
       x_str{iStr} = ['u(t-',num2str(it),')'];
       iStr = iStr + 1;
 end
+% %Include u(t)
+% for it=n_u-1:-1:1
+%       x_str{iStr} = ['u(t-',num2str(it),')'];
+%       iStr = iStr + 1;
+% end
+% x_str{iStr} = 'u(t)'
 y_str = 'y(t)';
 % x_str{iStr} = ['u(t)'];   
 %% Identify difference in lag
@@ -134,7 +141,8 @@ for t=timesNarx
     if n_y == 0
     x_narx(:,iNarx) = [Input(t-n_u:t,1)]; %                                 % NARX input
     else
-        x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u:t-1,1)]; %      % NARX input
+         x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u:t-1,1)]; %      % NARX input
+%         x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u+1:t,1)]; %      % NARX input - includes u(t)
     end 
 end
 nNarx = iNarx;                                                              % length of NARX input batch
