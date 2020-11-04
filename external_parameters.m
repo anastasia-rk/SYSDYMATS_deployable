@@ -62,27 +62,20 @@ save(fileName,'params','values');
 % noise power
 I = ones(1,5);
 %% Datasets HF - hardfoam
-<<<<<<< HEAD
 params = {'Thickness, m','Tension'};
 values1 = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I]./1000;...
 values2 = [0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]./100;
-=======
 params = {'Thickness, mm','Tension'};
 values1 = [5*I 5*I 10*I 10*I 10*I 10*I 10*I 15*I 15*I 5*I 10*I 15*I]./1000;... % 
 values2 = [0*I 20*I 0*I 5*I 10*I 15*I 20*I 0*I 20*I 0*I 0*I 0*I]./100; % 
->>>>>>> master
 values  = [values1; values2]';
 fileName = 'External_parameters_HF';
 save(fileName,'params','values');
 clear values params
 %% Daatsets H,V - soft foam
 params = {'Compression ratio'};
-values = [40*I 50*I 60*I 70*I 80*I 0*I]';
-<<<<<<< HEAD
-values = values./100;
-=======
+values = [20*I 30*I 40*I 50*I 54*I 60*I 70*I 80*I 0*I]';
 % values = values./100;
->>>>>>> master
 fileName = 'External_parameters_VS';
 save(fileName,'params','values');
 fileName = 'External_parameters_HS';
