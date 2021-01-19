@@ -6,7 +6,11 @@
 \begin{tikzpicture}
 
 \begin{axis}[%
+<<<<<<< HEAD
 width=5.856cm,
+=======
+width=5.986cm,
+>>>>>>> master
 height=6cm,
 at={(0cm,0cm)},
 scale only axis,
@@ -14,8 +18,13 @@ xmin=0,
 xmax=30,
 xlabel style={font=\color{white!15!black}},
 xlabel={Terms},
+<<<<<<< HEAD
 ymin=-22000,
 ymax=-12000,
+=======
+ymin=-120000,
+ymax=-70000,
+>>>>>>> master
 ylabel style={font=\color{white!15!black}},
 ylabel={BIC},
 axis background/.style={fill=white},
@@ -23,6 +32,7 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
 \addplot [color=mycolor1]
   table[row sep=crcr]{%
+<<<<<<< HEAD
 1	-12556.9413178367\\
 2	-18236.9685631589\\
 3	-18498.7367941528\\
@@ -50,12 +60,47 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 27	-20468.410187418\\
 29	-20453.3637544094\\
 30	-20446.0959251144\\
+=======
+1	-71779.8553860521\\
+2	-101809.052054577\\
+3	-102948.881527762\\
+4	-105892.697483352\\
+5	-106628.316195465\\
+6	-107166.627877465\\
+7	-111704.847284224\\
+8	-114947.103424521\\
+9	-115696.69262068\\
+10	-115747.917960335\\
+11	-115776.817493999\\
+12	-115819.732976359\\
+13	-115842.595870423\\
+14	-115839.743124438\\
+15	-115840.930559099\\
+16	-115839.391244339\\
+17	-115837.520849721\\
+18	-115854.134948193\\
+19	-115848.295641568\\
+20	-115859.797512287\\
+21	-115862.537943317\\
+22	-115863.954108959\\
+23	-115857.904937095\\
+24	-115848.884383972\\
+26	-115830.611493647\\
+27	-115822.220765907\\
+28	-115813.570402931\\
+29	-115804.747431776\\
+30	-115797.445047777\\
+>>>>>>> master
 };
 \addlegendentry{data1}
 
 \addplot [color=mycolor2, draw=none, mark=asterisk, mark options={solid, mycolor2}]
   table[row sep=crcr]{%
+<<<<<<< HEAD
 11	-20568.2549496859\\
+=======
+10	-115747.917960335\\
+>>>>>>> master
 };
 \addlegendentry{data2}
 

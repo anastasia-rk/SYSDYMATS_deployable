@@ -1,0 +1,10 @@
+This is BibTeX, Version 0.99dThe top-level auxiliary file: framework_scheme.aux
+The style file: biblatex.bst
+I couldn't open database file bibliography.bib
+---line 20 of file framework_scheme.aux
+ : \bibdata{framework_scheme-blx,bibliography
+ :                                           }
+I'm skipping whatever remains of this command
+Database file #1: framework_scheme-blx.bib
+Biblatex version: 3.3
+(There was 1 error message)

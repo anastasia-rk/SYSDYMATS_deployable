@@ -7,8 +7,13 @@
 \begin{tikzpicture}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(0cm,9.677cm)},
 scale only axis,
 xmin=0,
@@ -20,11 +25,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS1: RMSE(OSA) = 0.033947, RMSE(MPO) = 0.53022},
+legend style={legend cell align=left, align=left, draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS5: RMSE(OSA) = 0.17358, RMSE(MPO) = 1.9671},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	5.77289099999999\\
 7	7.01103000000001\\
@@ -214,7 +235,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	5.89124911780448\\
 7	7.2318720463642\\
@@ -404,7 +437,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	5.77289099999999\\
 7	7.01103000000001\\
@@ -612,8 +657,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(8.104cm,9.677cm)},
 scale only axis,
 xmin=0,
@@ -625,11 +675,27 @@ ymax=31.143746,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS8: RMSE(OSA) = 0.059141, RMSE(MPO) = 2.045},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS10: RMSE(OSA) = 0.21629, RMSE(MPO) = 3.3823},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	18.682806\\
 7	15.74997\\
@@ -811,7 +877,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	18.8666447479806\\
 8	12.5916160381217\\
@@ -1005,7 +1083,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	18.682806\\
 7	15.74997\\
@@ -1213,8 +1303,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(0cm,6.452cm)},
 scale only axis,
 xmin=0,
@@ -1226,11 +1321,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS9: RMSE(OSA) = 0.095128, RMSE(MPO) = 2.4498},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS15: RMSE(OSA) = 0.1482, RMSE(MPO) = 5.4388},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	8.63662099999999\\
 7	5.02228700000001\\
@@ -1415,7 +1526,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	8.72209622566535\\
 7	4.79147345642684\\
@@ -1604,7 +1727,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	8.63662099999999\\
 7	5.02228700000001\\
@@ -1812,8 +1947,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(8.104cm,6.452cm)},
 scale only axis,
 xmin=0,
@@ -1825,11 +1965,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS12: RMSE(OSA) = 0.05038, RMSE(MPO) = 1.0379},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS20: RMSE(OSA) = 0.14902, RMSE(MPO) = 9.5331},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	2.24351100000001\\
 7	-0.544108999999992\\
@@ -2009,7 +2165,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	2.14453245331896\\
 9	-6.32505886465768\\
@@ -2187,7 +2355,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	2.24351100000001\\
 7	-0.544108999999992\\
@@ -2395,8 +2575,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(0cm,3.226cm)},
 scale only axis,
 xmin=0,
@@ -2408,11 +2593,27 @@ ymax=40.6536641619141,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS14: RMSE(OSA) = 0.11639, RMSE(MPO) = 3.137},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS25: RMSE(OSA) = 0.23669, RMSE(MPO) = 14.514},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-16.26064\\
 8	-5.379535\\
@@ -2592,7 +2793,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-15.8513130412174\\
 8	-5.57196051975345\\
@@ -2785,7 +2998,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-16.26064\\
 7	-10.883571\\
@@ -2993,8 +3218,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(8.104cm,3.226cm)},
 scale only axis,
 xmin=0,
@@ -3006,11 +3236,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS17: RMSE(OSA) = 0.065087, RMSE(MPO) = 0.71233},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS30: RMSE(OSA) = 0.20362, RMSE(MPO) = 10.4997},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-12.336881\\
 7	-17.002168\\
@@ -3204,7 +3450,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-12.4426659622408\\
 7	-17.4859453565192\\
@@ -3397,7 +3655,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-12.336881\\
 7	-17.002168\\
@@ -3605,8 +3875,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(0cm,0cm)},
 scale only axis,
 xmin=0,
@@ -3618,11 +3893,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS19: RMSE(OSA) = 0.13726, RMSE(MPO) = 1.8743},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS35: RMSE(OSA) = 0.22899, RMSE(MPO) = 6.8202},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	6.39208099999999\\
 7	1.970902\\
@@ -3818,7 +4109,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	6.13909377271722\\
 7	1.68250898557346\\
@@ -4011,7 +4314,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	6.39208099999999\\
 7	1.970902\\
@@ -4219,8 +4534,13 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 \end{axis}
 
 \begin{axis}[%
+<<<<<<< HEAD
+width=6.3cm,
+height=1.8cm,
+=======
 width=6.159cm,
 height=2.323cm,
+>>>>>>> master
 at={(8.104cm,0cm)},
 scale only axis,
 xmin=0,
@@ -4232,11 +4552,27 @@ ymax=50,
 ylabel style={font=\color{white!15!black}},
 ylabel={$y(t)$},
 axis background/.style={fill=white},
+<<<<<<< HEAD
+title style={font=\scriptsize},
+title={VS23: RMSE(OSA) = 0.23463, RMSE(MPO) = 1.5323},
+legend style={legend cell align=left, align=left,draw=white!15!black,font=\fontsize{4}{5}\selectfont}
+]
+\addplot [color=mycolor1, line width=1.0pt]
+=======
 title style={font=\bfseries},
 title={VS40: RMSE(OSA) = 0.48472, RMSE(MPO) = 3.3366},
 legend style={legend cell align=left, align=left, draw=white!15!black}
 ]
+<<<<<<< HEAD
 \addplot [color=mycolor1, line width=2.0pt]
+=======
+<<<<<<< HEAD
+\addplot [color=mycolor1, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor1, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-16.424466\\
 7	-11.338279\\
@@ -4426,7 +4762,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{True output}
 
+<<<<<<< HEAD
 \addplot [color=mycolor2, dashed, line width=2.0pt]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+=======
+\addplot [color=mycolor2, dashed, line width=2.0pt]
+>>>>>>> master
+=======
+\addplot [color=mycolor2, dashed, line width=1.0pt]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-17.1967756154884\\
 7	-10.5617325882735\\
@@ -4618,7 +4966,19 @@ legend style={legend cell align=left, align=left, draw=white!15!black}
 };
 \addlegendentry{OSA predition}
 
+<<<<<<< HEAD
 \addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+=======
+<<<<<<< HEAD
+<<<<<<< HEAD
+\addplot [color=mycolor3, line width=1.0pt,densely dotted, mark options={solid, mycolor3}]
+=======
+\addplot [color=mycolor3, line width=3.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+=======
+\addplot [color=mycolor3, line width=1.0pt, draw=none, mark=*, mark options={solid, mycolor3}]
+>>>>>>> master
+>>>>>>> master
   table[row sep=crcr]{%
 6	-16.424466\\
 7	-11.338279\\

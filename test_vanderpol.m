@@ -1,4 +1,4 @@
-local_init;
+clear all; local_init;
 %% Test Van-der-Pol oscilator
 % create folder to store simulation data
 folderName = make_folder('../SYSDYMATS_data/vdpo');                     
@@ -32,7 +32,6 @@ for iMu = 1:length(mu_array)
         end
         u(it,1) = sum(fun);
     end
-    
 %% Save data to matfile
 yy0 = interp1(t,y,t0);
 u0 = interp1(t,u,t0);

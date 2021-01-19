@@ -1,4 +1,4 @@
-function poly_narx(foamset,dataset,normalise)
+    function poly_narx(foamset,dataset,normalise)
 % Creates dictionaries of polynomial regressors from the time-series data
 local_init;
 %% Set up global parameters
@@ -148,6 +148,13 @@ end
 nNarx = iNarx;                                                              % length of NARX input batch
 y_narx(:,:) = Output(timesNarx);                                            % NARX output
 u_narx(:,:) = Input(timesNarx); % for calling the input from the inline function in MPO - no delay is u(t-1) called from the function
+if mod(iFile,5) ==0
+    fig(fileName,'On');
+    subplot(2,1,1);
+    plot(y_narx);
+    subplot(2,1,2);
+    plot(u_narx);
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of regressors and compute all polynomial terms
 iTerm = 0;

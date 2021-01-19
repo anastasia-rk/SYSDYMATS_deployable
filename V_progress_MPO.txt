@@ -1,3 +1,4 @@
+<<<<<<< HEAD
    RS iter        Gamma        Alpha  PRESS lasso   PRESS spgl    T elapsed 
          1       0.9684       0.1538    1279.0874      13.0558       1.6393
          2       0.0257       0.4367    1523.5142      12.4640       1.6885
@@ -99,3 +100,6 @@
         98       0.0000       0.4533     884.5222          NaN       7.5537
         99       0.0002       0.9194     762.5480          NaN       5.1131
        100       0.0000       0.5213     839.3221          NaN       8.0901
+=======
+   RS iter        Gamma        Alpha  PRESS lasso   PRESS Tikh    T elapsed 
+>>>>>>> master

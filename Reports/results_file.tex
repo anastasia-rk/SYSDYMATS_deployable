@@ -1,0 +1,259 @@
+% !TeX TXS-program:compile = txs:///pdflatex/[--shell-escape]
+\documentclass[a4paper,11pt,twoside]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% A generic report compiler for publishing rables and plots for a partcular choise of lags in the NARX system
+% A path to media corresponding to the setting is defined below, as well as chosen parameter settings
+\makeatletter
+\def\input@path{{../Results_cv_set_VS_ny_4_nu_4/}}
+\def\dataset{HS}
+\def\datasett{VS}
+\def\ny{4}
+\def\nu{4}
+\def\order{3}
+\makeatother
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
+\usepackage[final]{pdfpages}
+\usepackage{verbatim}
+\usepackage{inputenc}
+\usepackage{graphicx} 
+\usepackage{amsmath,amssymb,mathrsfs,amsfonts}
+\usepackage{mathtools}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{calrsfs}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{eucal}    
+\usepackage{amssymb}  
+\usepackage{pifont}
+\usepackage{color} 
+\usepackage{cancel}
+\usepackage[toc,page]{appendix}
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest,every axis/.append style={line width=0.5pt},x label style={font={\small},at={(axis description cs:0.5,-0.15)},anchor=north},y label style={font={\small},at={(axis description cs:-0.15,0.5)},anchor=south},z label style={font={\small},at={(axis description cs:-0.25,0.5)},anchor=north},label style={font=\small},tick label style={font=\small},title style={font=\small},} %% y tick label style={/pgf/number format/.cd,fixed,precision=3, set thousands separator={},},z tick label style={/pgf/number format/.cd,fixed,precision=3, set thousands separator={},
+\usetikzlibrary{shapes,shadows,arrows,backgrounds,patterns,positioning,automata,calc,decorations.markings,decorations.pathreplacing,bayesnet,arrows.meta,decorations.fractals,spy}
+\usepackage{varwidth}
+\usepackage{lscape}
+\usepackage{array} 
+\usepackage[colorlinks=false,pdfborder={0 0 0}]{hyperref}
+\usepackage{tabularx}
+\usepackage{textcomp}
+\usepackage{multicol} 
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[font=small,labelfont=bf]{caption}                                                           
+\usepackage{textcase}
+\usepackage{bbm} 
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{soul}
+\usepackage{wrapfig}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Geometry
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0.5em}
+\renewcommand{\baselinestretch}{1.2}
+\usepackage[left=2cm, right=2cm, top=2.5cm, bottom=3cm, headheight=13.6pt]{geometry}
+\allowdisplaybreaks 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Bibliography
+\usepackage[backend=bibtex,style=ieee,sorting=none]{biblatex} 
+\bibliography{bibliography}
+\renewcommand*{\bibfont}{\scriptsize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom commands and operators
+\makeatletter
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
+\newcommand{\ie}{\textit{i.e.} }
+\newcommand{\eg}{\textit{e.g.} }
+\newcommand\id{\ensuremath{\mathbbm{1}}} 
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\DeclareMathOperator{\E}{\mathbb{E}}
+\DeclareMathOperator{\eye}{\mathbb{I}}
+\DeclareMathOperator{\zeros}{\mathbb{O}}
+\DeclareMathOperator{\tr}{\textrm{tr}}
+\DeclareMathOperator{\vvec}{\textrm{vec}}
+\DeclareMathOperator{\ik}{\mathrm{k}}
+\DeclareMathOperator{\ip}{\mathrm{p}}
+\DeclareMathOperator{\inn}{\mathrm{n}}
+\DeclareMathOperator{\im}{\mathrm{m}}
+\DeclareMathOperator{\td}{\mathrm{t}}
+\DeclareMathOperator{\kd}{\mathrm{k}}
+\DeclareMathOperator{\T}{\mathrm{T}}
+\DeclareMathOperator{\K}{\mathrm{K}}
+\DeclareMathOperator{\rk}{\mathrm{rk}}
+\DeclareMathOperator{\vc}{\mathrm{vec}}
+\DeclareSymbolFontAlphabet{\mathcal} {symbols}
+\DeclareSymbolFont{symbols}{OMS}{cm}{m}{n}
+\DeclareMathAlphabet{\mathbfit}{OML}{cmm}{b}{it}
+\makeatother
+% Number equations
+%\numberwithin{equation}{section}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Theorems
+\newtheoremstyle{mytheoremstyle} % name
+{.5em}                    % Space above
+{.8em}                    % Space below
+{\itshape}                % Body font
+{1em}                           % Indent amount
+{\bfseries}                   % Theorem head font
+{:}                          % Punctuation after theorem head
+{.5em}                       % Space after theorem head
+{}  % Theorem head spec (can be left empty, meaning ‘normal’)
+
+\theoremstyle{mytheoremstyle}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{remark}{Remark}[section]
+\newtheorem{assumption}{Assumption}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{condition}{Condition}[section]
+\newtheorem{definition}{Definition}[section]
+\newtheorem{property}{Property}[section]
+\newtheorem{corollary}{Corollary}[section]
+\renewcommand\qedsymbol{$\blacksquare$}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Nomenclature
+\usepackage[intoc]{nomencl}
+\makenomenclature
+
+\usepackage[ruled]{algorithm}
+\usepackage{float}
+
+\usepackage{algorithmic}
+\algsetup{linenosize=\scriptsize}
+\usepackage{etoolbox}
+\AtBeginEnvironment{algorithmic}{\scriptsize}
+\renewcommand{\thealgorithm}{\thechapter.\arabic{algorithm}} 
+%\usepackage{chngcntr}
+%\counterwithin{algorithm}{section}
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{titling}
+\setlength{\droptitle}{-6em}     % Eliminate the default vertical space
+\addtolength{\droptitle}{4pt}   % Only a guess. Use this for adjustment	tubnode/.style={midway, right=2pt},
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[explicit]{titlesec}
+\usepackage{titletoc}
+\interfootnotelinepenalty=10000
+\title{Identification framework overview}
+\date{}
+\begin{document}
+	\maketitle
+	\vspace{-2cm}
+\section{Framework structure}
+\par The schematic overview is of the implemented identification framework is presented in Figure 1, with further details on the constituent parts described in Table 1. The notation is consistent with the previous report.\\
+\begin{figure}[!h]
+\begin{tikzpicture}
+\centering
+[spy using outlines={circle, magnification=4, size=2cm, connect spies}]
+\tikzstyle{block} = [rectangle, draw, fill=white, 
+text width=10em, text centered, rounded corners, minimum height=3em]
+\tikzstyle{line} = [draw, -latex']
+%\draw [help lines] (0,0) grid (17,12);
+\node at (8.5,12.5) (A0){};
+\node[block,align=center,text width=18em] at (8.5,11) (A1){EFOR-based common model structure selection};
+\node[block,align=center,text width=18em] at (8.5,9) (A2){Formulating the regression in terms of polynomial coefficients};
+\node[block,text width=7em,align=center] at (1.8,9) (A21){Design parameter mapping};
+\node[block,align=center,text width=18em] at (8.5,7) (A3){Splitting the regression into training and testing subsets};
+\node[block,align=center,text width=38em,text height=5em] at (8.5,4.5) (A4){Cross-validation};
+\node[block,align=center] at (4,4.6) (A41){Ridge regression};
+\node[block,align=center] at (8.5,4.6) (A42){LASSO};
+\node[block,align=center] at (13,4.6) (A43){Sparse group LASSO};
+\node[block,align=center,text width=18em] at (8.5,2) (A5){Estimation with optimal hyper-parameters};
+\node[block,align=center,text width=18em] at (8.5,0) (A6){Validation on testing datasets};
+\node[block,text width=7em,align=center] at (1.8,0) (A61){Testing datasets};
+\path[->,draw,thick]
+(A0) edge node[right] {$y^{k}_{train}(t), u^{k}_{train}(t), k = 1,\dots,K$} (A1)
+(A1) edge node[right] {$f(y,u,t,\theta)$} (A2)
+(A21) edge node[above] {$g(\xi,\mathbf{B})$} (A2)
+(A2) edge node[right] {$\Phi, \mathbf{Y}$} (A3)
+(A3) edge node[right] {$\bar{\mathbf{Y}}, \bar{\Phi}, \tilde{\mathbf{Y}}, \tilde{\Phi}$} (A4)
+(A4) edge node[right] {$\gamma^{\ast},\alpha^{\ast}$} (A5)
+(A5) edge node[right] {$\mathbf{B}^{\ast}_{ridge}, \mathbf{B}^{\ast}_{lasso}, \mathbf{B}^{\ast}_{spgl}$} (A6)
+(A61) edge node[above] {$y(t), u(t)$} (A6)
+;
+\end{tikzpicture}
+\caption{A schematic overview of the identification framework.}
+\end{figure}
+\begin{table}
+	\centering
+		\caption{Constituent parts of the framework}\label{tab:criteria}
+		\small
+		\begin{tabular}{>{\raggedright\arraybackslash}p{1.5cm}
+				>{\raggedright\arraybackslash}p{3cm}
+				>{\raggedright\arraybackslash}p{3cm}
+			>{\raggedright\arraybackslash}p{8cm}}
+			Algorithm & Input & Output & Criterion \\ 
+			\hline 
+			EFOR &Dictionary of regressors & Model structure & \begin{tabular}{@{}l@{}} AERR - for determining significant terms \\ BIC - for truncating number of terms \end{tabular} \\ 
+			Tikhnonov & Training data, $\lbrace \bar{\mathbf{Y}}, \bar{\Phi} \rbrace$; Lagrangian, $\gamma$ & Polynomial coefficients, $\hat{\mathbf{B}}^{\ast}(\gamma)$  & $  \Biggl \{\norm{ \biggl(\bar{\mathbf{Y}} - \bar{\Phi} \mathbf{K}\bar{\mathbf{B}} \biggr) }_{2}^{2} + \gamma \norm{\bar{\mathbf{B}}}^{2}_{2} \Biggr\}$ \\
+			LASSO & Training data, $\lbrace \bar{\mathbf{Y}}, \bar{\Phi} \rbrace$; Lagrangian, $\gamma$ & Polynomial coefficients, $\hat{\mathbf{B}}^{\ast}(\gamma)$ &  $  \Biggl \{\norm{ \biggl(\bar{\mathbf{Y}} - \bar{\Phi} \mathbf{K}\bar{\mathbf{B}} \biggr) }_{2}^{2} + \gamma \norm{\bar{\mathbf{B}}}_{1} \Biggr\}$ \\ 
+			Sparse group LASSO &Training data, $\lbrace \bar{\mathbf{Y}}, \bar{\Phi} \rbrace$; Lagrangians, $\gamma, \alpha$ & Polynomial coefficients, $\hat{\mathbf{B}}^{\ast}(\gamma, \alpha)$  &  $  \Biggl \{\norm{ \biggl(\bar{\mathbf{Y}} - \bar{\Phi} \mathbf{K}\bar{\mathbf{B}} \biggr) }_{2}^{2} + \gamma \left((1-\alpha) \sum_{i}^{N}\sqrt{L_i} \norm{B_i}^2_{2} + \alpha \sum_{i}^{N} \norm{B_i}_{1}\right)\Biggr\}$  \\
+			CV & Testing data, $\lbrace \tilde{\mathbf{Y}}, \tilde{\Phi} \rbrace$; Parameter estimates,  $\hat{\mathbf{B}}^{\ast}(\gamma, \alpha)$  & Optimal regularisation parameters, $\gamma^{\ast},\alpha^{\ast}$ &  $\mathrm{PRESS} = \sum_{l=1}^{L} \sum_{t} (\tilde{y}^{l}(t) - \hat{y}^{l}(t))$, where $L$ is number of folds  \\ 
+			\hline 
+		\end{tabular}	
+	\end{table}
+\par In table 1, the regressor matrix $\Phi$ reflects both the common structure of the dynamical model identified using EFOR algorithm,  $f$, and the arbitrary structure of the polynomial parameter mapping, $g$. The joint regression matrix and output vector are partitioned for the cross validation into the training data, $\bar{\Phi}, \bar{\mathbf{Y}}$, and the testing data, $\tilde{\Phi}, \tilde{\mathbf{Y}}$. The estimation algorithms are performed simultaneously with the same regularisation coefficient. Optimal regularisation coefficients are found using random search algorithm with 200 iterations. The testing datasets for the final stage are not utilised in the model identification and differ from the testing subsets in the cross-validation algorithm.
+\section{Results file}
+The matlab file with results contains the following variables:
+\begin{itemize}
+	\item Betas\_nonreg\_opt -- estimate of polynomial coefficients obtained using OLS
+	\item Betas\_tikh\_opt -- estimate of polynomial coefficients obtained using ridge regression
+	\item Betas\_lasso\_opt -- estimate of polynomial coefficients obtained using LASSO algorithm
+	\item Betas\_spl\_opt -- estimate of polynomial coefficients obtained using sparse group LASSO regression
+	\item Files -- indices of files used for model training
+	\item testFiles -- indices of files used for model testing
+	\item A -- matrix of polynomial model terms for training files so that the following relationship holds
+	\begin{equation*}
+	\Theta = B A^{\top}.
+	\end{equation*}
+	\item A\_valid -- matrix of polynomial model terms for testing files
+	\item A\_symb -- symbolic array of polynomial model terms that (structure of $g(\cdot)$)
+	\item f\_model -- inline functions for lagged terms in the dynamical model $f(\cdot)$
+	\item g\_model -- inline functions for polynomial terms in the parameter model  $g(\cdot)$
+	\item Terms -- symbolic array with identified significant model terms (structure of $f(\cdot)$)
+	\item extParams -- design parameter vector indexed according to the tables 1 and 2 in the previous report
+\end{itemize}
+%\begin{figure}[!h]
+%	\includegraphics[width=\linewidth]{mpo_osa.png}
+%	\caption{Model output from the model identified with OSA-PRESS optimal regularisation parameters for dataset HS4.}
+%\end{figure}
+%\begin{figure}[!h]
+%	\includegraphics[width=\linewidth]{blocks.png}
+%	\caption{Block partitions of the regression data. Each testing dataset has time-series structure.}
+%\end{figure}
+\section{Validation results for modified framework}
+\par Figures below present validation results for experimental data obtained for soft auxetic foams. The test file indexing corresponds to the tables 2 in the previous report.
+%\begin{figure}[!h]
+%	\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+%	\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+%	\centering
+%	\input{../Results_cv_set_HS_ny_4_nu_4/OLS_validation.tikz}
+%	\caption{Validation results for model estimated using OLS. Compression direction d1.}\label{fig:ols_hs}
+%\end{figure}
+%\begin{figure}[!h]
+%	\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+%	\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+%	\centering
+%	\input{../Results_cv_set_HS_ny_4_nu_4/LASSO_validation.tikz}
+%	\caption{Validation results for model estimated using LASSO.Compression direction d1.}\label{fig:ols_vs}
+%\end{figure}
+\begin{figure}[!h]
+	\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+	\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+	\centering
+	\input{OLS_validation.tikz}
+	\caption{Validation results for the model estimated using OLS. Compression direction d3.}\label{fig:spgl_hs}
+\end{figure}
+\begin{figure}[!h]
+	\definecolor{mycolor1}{rgb}{0.00000,0.44700,0.74100}%
+	\definecolor{mycolor2}{rgb}{0.85000,0.32500,0.09800}%
+	\centering
+	\input{LASSO_validation.tikz}
+	\caption{Validation results for the model estimated using LASSO. Compression direction d3.}\label{fig:spgl_vs}
+\end{figure}
+\end{document}

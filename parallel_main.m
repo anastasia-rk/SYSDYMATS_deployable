@@ -62,7 +62,7 @@ end
 A = [ones(size(x))];                                                          % add unit vector for constants in design matrix
 A_valid = [ones(size(x_valid))];                                              % add unit vector for constants in validation matrix 
 A_symb{1} = '1';
-g_model{1} = inline('1','xi');
+g_model{1} = @(x,y) 1;
 if ~isempty(y)                                                              % unknown mapping is a surface
    powers = permn(0:2,2);                                                   % permuntations of all 
    powers = powers(2:end,:);    
@@ -589,7 +589,7 @@ colorbar;
 foName = ['../SYSDYMATS_data/results/',folderName]
 make_folder(foName)
 fiName = [foName,'/','Contrained_estimation_resullts'];
-save(fiName);
+close all; save(fiName);
 fiYunpeng  = ['Results_for_Yunpeng_',dataset];
 extParams  = values;
 save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 

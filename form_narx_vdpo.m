@@ -256,7 +256,7 @@ switch regressors
         for t=timesNarx
             iNarx = iNarx + 1;
             if n_y == 0
-                x_narx(:,iNarx) = [Input(t-n_u:t,1)]; %                     % NARX input
+                x_narx(:,iNarx) = [Input(t-n_u:t-1,1)]; %                   % NARX input
             else
                 x_narx(:,iNarx) = [Output(t-n_y:t-1,1);Input(t-n_u:t-1,1)]; % NARX input
             end 
