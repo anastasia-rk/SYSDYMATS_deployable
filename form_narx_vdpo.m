@@ -1,3 +1,4 @@
+clear all;
 local_init;
 % Creates dictionaries of delta-domain regressors from the time-series data
 %% Set up global parameters
@@ -8,11 +9,12 @@ output_i = 3;                                                       % output col
 K        = 10;                                                      % number of datasets
 normC    = 1;
 dataset = 'V';
-addpath('..\SYSDYMATS_data\',foamset)
+addpath(['..\SYSDYMATS_data\',foamset])
 load('External_parameters_V');
 folder = 'dictionaries';
-normalise = questdlg('Scale the data?', ...
-        'Normalisation');
+normalise = 'No'
+% questdlg('Scale the data?', ...
+%         'Normalisation');
 switch normalise
     case 'No'                                     
         normC = 1;
@@ -20,9 +22,10 @@ switch normalise
         folder = [folder,'_norm'];
         normC = 4;
 end
-regressors = questdlg('Select the domain of regressors', ...
-    'Domain choice',...
-	'Shift','Delta','');
+regressors = 'Shift'
+% questdlg('Select the domain of regressors', ...
+%     'Domain choice',...
+% 	'Shift','Delta','');
 switch regressors
     case 'Shift'
         n_u     = 4;                                                        % input signal lag length
@@ -158,7 +161,7 @@ load(fileName);
 Input  = fileData(:,input_i)./normC;
 Output = fileData(:,output_i)./normC;
 t_0 = 100;
-T   = min(10000,length(Input)-n_u); %length(Input); % length of the observation sequence
+T   = min(2000,length(Input)-n_u); %length(Input); % length of the observation sequence
 iNarx = 0;                                                                  % batch index of the input vector in AR model
 timesNarx = [t_0:T];
 y = Output(timesNarx);

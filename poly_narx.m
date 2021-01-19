@@ -8,7 +8,7 @@ switch foamset
         input_i  = 3;                                                       % input column index
         output_i = 2;                                                       % output column index
         K        = 10;                                                      % number of datasets
-        dT       = 0.02;
+        dT       = 0.001;
         normC    = 400;
     case 'foam_2019'
         input_i  = 2;                                                       % input column index
@@ -23,9 +23,9 @@ switch foamset
         dT  = 9/51200;                                                      % sampling time
         switch dataset
             case 'HS'
-                K = 30; 
+                K = 45; 
             case 'VS'
-                K = 30; 
+                K = 45; 
             case 'HF'
                 K = 60;                                         
         end
@@ -58,7 +58,7 @@ d       = n_y + n_u;                                                        % si
 lambda  = 3;                                                                % order of polynomial
 % a       = sym('x_',[1 d]);                                                % associated symbolic vector
 names = {'set','ny','nu'};                                                  % names used to define results folder name (no more than 3).
-folder = ['../SYSDYMATS_dictionaries/',folder];
+folder = ['..\SYSDYMATS_dictionaries\',folder];
 folderName = make_folder(folder,names,dataset,n_y,n_u);                     % create results folder
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -70,17 +70,17 @@ if n_y~=0
       iStr = iStr + 1;
    end
 end
- %Exclude u(t)
-for it=n_u:-1:1
-      x_str{iStr} = ['u(t-',num2str(it),')'];
-      iStr = iStr + 1;
-end
-% %Include u(t)
-% for it=n_u-1:-1:1
+%  %Exclude u(t)
+% for it=n_u:-1:1
 %       x_str{iStr} = ['u(t-',num2str(it),')'];
 %       iStr = iStr + 1;
 % end
-% x_str{iStr} = 'u(t)'
+%Include u(t)
+for it=n_u-1:-1:1
+      x_str{iStr} = ['u(t-',num2str(it),')'];
+      iStr = iStr + 1;
+end
+x_str{iStr} = 'u(t)'
 y_str = 'y(t)';
 % x_str{iStr} = ['u(t)'];   
 %% Identify difference in lag
@@ -96,7 +96,7 @@ switch sign(df)
 %         disp('positive')
         t_0 = n_u+1;
 end
-% t_0 = 500 + t_0;
+t_0 = 1000 + t_0;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create sum index permutations
 indeces{1} = [1:d]';
@@ -131,7 +131,7 @@ if center
 %    meanOut   = mean(Output);
 %    Output  = Output - meanOut;
 end
-T   = min(10000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
+T   = min(2000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of input vectors
 iNarx = 0;                                                                  % batch index of the input vector in AR model
@@ -141,8 +141,8 @@ for t=timesNarx
     if n_y == 0
     x_narx(:,iNarx) = [Input(t-n_u:t,1)]; %                                 % NARX input
     else
-         x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u:t-1,1)]; %      % NARX input
-%         x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u+1:t,1)]; %      % NARX input - includes u(t)
+%          x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u:t-1,1)]; %      % NARX input
+         x_narx(:,iNarx) = [Output(t-n_y:t-1,1); Input(t-n_u+1:t,1)]; %      % NARX input - includes u(t)
     end 
 end
 nNarx = iNarx;                                                              % length of NARX input batch
@@ -179,9 +179,9 @@ else
     end
 end
 iTerm = iTerm + 1;
-term(:,iTerm) = 1;
-symb_term{iTerm} = sym('c');
-inline_term{iTerm} = '1';
+term(:,iTerm)       = 1;
+symb_term{iTerm}    = 'c';
+inline_term{iTerm}  = '1';
 if disFlag
     disp('Dictionary complete')
 end

@@ -31,11 +31,11 @@ function [ pimat ] = SPLAsso( I, R, groups, l1, l2)
         variable pimat_sgl(n,m)
 
         % Zero-Constrained Sparse Group Lasso Model
-        minimize(sum_square_pos(norm(I - sum(R*pimat_sgl,2))) + l1*norms(pimat_sgl,2,1)*sqr_group_sizes + l2*sum(abs(pimat_sgl(:))) )
-        subject to
+        minimize(sum_square(I - sum(R*pimat_sgl,2)) + l1*norms(pimat_sgl,2,1)*sqr_group_sizes + l2*sum(abs(pimat_sgl(:))) )
+%         subject to
 %             pimat_sgl >= 0 
-            % Zero-Constraint
-            pimat_sgl(not_group_idx) == 0
+%             Zero-Constraint
+%              pimat_sgl(not_group_idx) == 0
     cvx_end    
       pimat = full(pimat_sgl(group_idx));
 end

@@ -71,8 +71,8 @@ save(fileName,'params','values');
 clear values params
 %% Daatsets H,V - soft foam
 params = {'Compression ratio'};
-values = [40*I 50*I 60*I 70*I 80*I 0*I]';
-% values = values./100;
+values = [20*I 30*I 40*I 50*I 54*I 60*I 70*I 80*I 0*I]';
+values = values./100;
 fileName = 'External_parameters_VS';
 save(fileName,'params','values');
 fileName = 'External_parameters_HS';
