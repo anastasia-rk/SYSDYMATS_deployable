@@ -574,7 +574,7 @@ AERR  = round(AERR_mm(1:finalTerm,1)*100,3);
 clear Tab
 Tab = table(Step,Terms,AERR);
 for iBeta=1:L
-    Parameters = round(Betas_nonreg_opt(:,iBeta),6);
+    Parameters = round(Betas_nonreg_opt(:,iBeta),4);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
@@ -583,7 +583,7 @@ table2latex(Tab,tableName);
 clear Tab
 Tab = table(Step,Terms,AERR);
 for iBeta=1:L
-    Parameters = round(Betas_tikh_opt(:,iBeta),6);
+    Parameters = round(Betas_tikh_opt(:,iBeta),4);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
@@ -592,7 +592,7 @@ table2latex(Tab,tableName);
 clear Tab
 Tab = table(Step,Terms,AERR);
 for iBeta=1:L
-    Parameters = round(Betas_lasso_opt(:,iBeta),6);
+    Parameters = round(Betas_lasso_opt(:,iBeta),4);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
@@ -601,7 +601,7 @@ table2latex(Tab,tableName);
 clear Tab
 Tab = table(Step,Terms,AERR);
 for iBeta=1:L
-    Parameters = round(Betas_spl_opt(:,iBeta),8);
+    Parameters = round(Betas_spl_opt(:,iBeta),4);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
