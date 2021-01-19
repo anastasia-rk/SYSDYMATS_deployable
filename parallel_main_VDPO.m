@@ -1,38 +1,9 @@
-clear all; local_init;
-<<<<<<< HEAD:parallel_main_VDPO.m
+clear all; clc; local_init;
 foamset = 'vdpo';
 dataset = 'V';
 Files = [1 2 4 5 6 7 8 9];
 testFiles  = [1:10];
-=======
-foamset = 'foam_2020';
-dataset = 'HS';
 %%
-switch foamset
-    case 'foam_2010'
-            Files = [1 2 4 5 6 7 9 10];
-            testFiles  = [3 8];
-    case 'foam_2019'
-            Files = [3 6 9 12];
-            testFiles  = [1 3 5 7 8 10 11];
-    case 'foam_2020'
-    switch dataset
-        case 'HS'
-            Files = [5 8 10 15 20 22 25];
-            testFiles  = [1 8 9 12 14 17 20 23];
-        case 'VS'
-            Files = [4 5 8 10 13 15 18 20 22 25]; 
-%             Files = [5 8 10 15 20 25];
-            testFiles  = [1 3 8 9 12 14 17 23];
-        case 'HF'
-            Files = [1 10 15 20 30 35 40 41]; 
-            testFiles  = [5 8 11 19 25 29 37 45];
-    end 
-    case 'sweep_2020'
-         Files = [1 2 3 5];
-         testFiles  = [1 3 4 6];       
-end
->>>>>>> master:parallel_main_HS.m
 folder = 'results_cv';                                                      % specify category where to save files
 dFolder = '../SYSDYMATS_dictionaries/dictionaries';
 metaFileName = ['Meta_',dataset];
@@ -72,7 +43,7 @@ g_model{1} = inline('1','xi');
 if ~isempty(y)                                                              % unknown mapping is a surface
    powers = permn(0:2,2);                                                   % permuntations of all 
    powers = powers(2:end,:);    
-   nCols = min(size(powers,1),K-1);                                         % number of terms in the model shouldn't be higher then K
+   nCols = min(size(powers,1),K);                                           % number of terms in the model shouldn't be higher then K
    for iCol = 1:nCols
        xCol = x.^powers(iCol,1);
        yCol = y.^powers(iCol,2);
@@ -87,7 +58,6 @@ if ~isempty(y)                                                              % un
 
    end
 else                                                                        % unknown mapping is a curve
-<<<<<<< HEAD:parallel_main_VDPO.m
     powers = [-1 -2 -3 1 2 3]
     nCols =  min(6,K);                                                      % number of terms in the model shouldn't be higher then K
     for iCol = 1:nCols                                                      % limit order of the model by the number of experimants
@@ -97,14 +67,6 @@ else                                                                        % un
        g_model{iCol+1} = inline(temp_g,'xi'); % @(x,power) x^(power);
        clear temp_g
   
-=======
-    powers = [-3 -2 -1 1 2 3];
-    nCols =  min(length(powers),K-1);                                       % number of terms in the model shouldn't be higher then K
-    for iCol = 1:nCols                                                      % limit order of the model by the number of experimants
-       A = [A x.^powers(iCol)];
-       A_valid = [A_valid x_valid.^powers(iCol)];
-       A_symb{iCol+1} = ['$x^{',num2str(powers(iCol)),'}$'];
->>>>>>> master:parallel_main_HS.m
    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -185,11 +147,7 @@ end
         end
         significant_term{iTerm} = symb_term{S(iTerm)};
         BIC_all(iTerm) = BIC_sum/K;                                         % average AMDL over all sets
-<<<<<<< HEAD:parallel_main_VDPO.m
-        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.005); % check convergence
-=======
         converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.0001); % check convergence
->>>>>>> master:parallel_main_HS.m
         if converged_BIC
             bics  = [bics,iTerm];
         end

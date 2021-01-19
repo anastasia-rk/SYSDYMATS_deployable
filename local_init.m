@@ -12,6 +12,7 @@ else
     myPath = pathCell(index_path);                                          % see all subridectories in the path
     newPath = false;
 end
+addpath(genpath('../MATLAB'));
 %% Go through the subdirectories
 f = dir(LibFolder);
 git = 4;                                                                    % git offset

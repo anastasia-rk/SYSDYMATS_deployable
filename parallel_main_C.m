@@ -570,8 +570,9 @@ fiYunpeng  = ['Results_for_Yunpeng_',dataset];
 extParams  = values;
 save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
 %% Saving external parameters to table
+AERR  = round(AERR_mm(1:finalTerm,1)*100,3);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_nonreg_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -580,7 +581,7 @@ end
 tableName = [folderName,'/Betas_ols'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_tikh_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -589,7 +590,7 @@ end
 tableName = [folderName,'/Betas_tikhonov'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_lasso_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -598,7 +599,7 @@ end
 tableName = [folderName,'/Betas_lasso'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_spl_opt(:,iBeta),8);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
