@@ -147,7 +147,7 @@ end
         end
         significant_term{iTerm} = symb_term{S(iTerm)};
         BIC_all(iTerm) = BIC_sum/K;                                         % average AMDL over all sets
-        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.0001); % check convergence
+        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.001); % check convergence
         if converged_BIC
             bics  = [bics,iTerm];
         end
@@ -246,14 +246,15 @@ for iFile = Files
 end
 terms_all   = 1:finalTerm*iMpo;
 M_all  = Phi_bar*Kr;  
-[Q_all,R_all] = mgson(M_all);                                               % Orthogonalise M via modified Gram-Schmidt
+[Q_all,R_all] = mgson(M_all);  
+times = 1:length(Y_all);
+% Orthogonalise M via modified Gram-Schmidt
 % !!!!!!!!!!!! From this point onwards we work with Q_all for
 % cross-validation. We will utilise the R_all for orthogonal solution only after
 % optimal regularisation parameters have been found
 %% Form folds for CV with K-folds
 nFolds = length(Files);
 Folds = [1:nFolds];
-times = 1:length(Y_all);
 cvpart = cvpartition(length(Y_all),'kFold',nFolds);                         % create even-ish partitions for k-folding
 for iFold = 1:nFolds                                                        % over all Folds
     timesTrain{iFold} = times(cvpart.training(iFold));
@@ -298,14 +299,14 @@ for iMpo = 1:length(Files)
     clear t_train M Q_t R_t
 end
 %% Random search vector
-log_max = 0; log_min = -6; nLambdas = 100;
+log_max = 2; log_min = -6; nLambdas = 150;
 lambdas = [10.^(log_min + (log_max-log_min)*rand(nLambdas,1)) rand(nLambdas,1)];
 L       = size(A,2);
 fid_osa=fopen([dataset,'_progress_OSA.txt'],'w');
-fprintf(fid_osa,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','T elapsed');
+fprintf(fid_osa,'%10s %12s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','PRESS SPGL','T elapsed');
 fid_mpo=fopen([dataset,'_progress_MPO.txt'],'w');
-fprintf(fid_mpo,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS spgl','T elapsed');
-writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
+fprintf(fid_mpo,'%10s %12s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','PRESS SPGL','T elapsed');
+writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
 pool =  parpool('local');
 %% OSA cross-validation for constrained problems
 % if disFlag
@@ -614,7 +615,7 @@ else
     L1 = 1;
 end
 L2 = round(length(testFiles)/L1);
-index_test  = 1:800;
+index_test  = 1:400;
 index_plot  = 1:length(index_test);
 %% Validate unconstrained
 Theta_test  = Betas_nonreg_opt*A_valid';

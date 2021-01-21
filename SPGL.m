@@ -14,19 +14,19 @@ for i = 1:nGroups
    new_group = [ind_start, ind_end, sqrt(length(index))]'; % form new group info
    group_info = [group_info new_group]; 
 end
-
+beta_0 = M_tilda\Y;
 %----------------------- Set optional items -----------------------
 opts=[];
 
 % Starting point
-opts.init=2;        % starting from a zero point
-
+opts.init = 2;        % starting from the LS estimate
+% opts.x0 = beta_0;
 % Termination 
-opts.tFlag=5;       % run .maxIter iterations
-opts.maxIter=100;   % maximum number of iterations
+opts.tFlag=4;       % run until norm of residual below threshold
+% opts.maxIter=100;   % maximum number of iterations
 
 % regularization
-opts.rFlag=1;       % use ratio
+opts.rFlag=0;       % use ratio
 
 % Normalization
 opts.nFlag=0;       % without normalization

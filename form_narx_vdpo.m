@@ -161,7 +161,7 @@ load(fileName);
 Input  = fileData(:,input_i)./normC;
 Output = fileData(:,output_i)./normC;
 t_0 = 100;
-T   = min(2000,length(Input)-n_u); %length(Input); % length of the observation sequence
+T   = min(1000,length(Input)-n_u); %length(Input); % length of the observation sequence
 iNarx = 0;                                                                  % batch index of the input vector in AR model
 timesNarx = [t_0:T];
 y = Output(timesNarx);

@@ -1,8 +1,9 @@
-clear all; local_init;
+clear all; clc; local_init;
 foamset = 'foam_2010';
 dataset = 'C';
 Files = [1 2 4 5 6 7 8 9];
 testFiles  = [1:10];
+%%
 folder = 'results_cv';                                                      % specify category where to save files
 dFolder = '../SYSDYMATS_dictionaries/dictionaries';
 metaFileName = ['Meta_',dataset];
@@ -146,7 +147,7 @@ end
         end
         significant_term{iTerm} = symb_term{S(iTerm)};
         BIC_all(iTerm) = BIC_sum/K;                                         % average AMDL over all sets
-        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.005); % check convergence
+        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.001); % check convergence
         if converged_BIC
             bics  = [bics,iTerm];
         end
@@ -215,7 +216,7 @@ end
 tableName = [folderName,'/Thetas_overall'];
 table2latex(internalParams,tableName);
 clear Tab tableName
-clear AERR alpha U phi residual p Theta g
+clear AERR alpha U phi residual p g
 %% Form regression matrices for all time points
 % vectorisation for joint estimation
 I   = eye(finalTerm);                                                       % unit matrix, size NxN
@@ -245,14 +246,15 @@ for iFile = Files
 end
 terms_all   = 1:finalTerm*iMpo;
 M_all  = Phi_bar*Kr;  
-[Q_all,R_all] = mgson(M_all);                                               % Orthogonalise M via modified Gram-Schmidt
+[Q_all,R_all] = mgson(M_all);  
+times = 1:length(Y_all);
+% Orthogonalise M via modified Gram-Schmidt
 % !!!!!!!!!!!! From this point onwards we work with Q_all for
 % cross-validation. We will utilise the R_all for orthogonal solution only after
 % optimal regularisation parameters have been found
 %% Form folds for CV with K-folds
 nFolds = length(Files);
 Folds = [1:nFolds];
-times = 1:length(Y_all);
 cvpart = cvpartition(length(Y_all),'kFold',nFolds);                         % create even-ish partitions for k-folding
 for iFold = 1:nFolds                                                        % over all Folds
     timesTrain{iFold} = times(cvpart.training(iFold));
@@ -297,14 +299,14 @@ for iMpo = 1:length(Files)
     clear t_train M Q_t R_t
 end
 %% Random search vector
-log_max = 0; log_min = -6; nLambdas = 100;
+log_max = 2; log_min = -6; nLambdas = 150;
 lambdas = [10.^(log_min + (log_max-log_min)*rand(nLambdas,1)) rand(nLambdas,1)];
 L       = size(A,2);
 fid_osa=fopen([dataset,'_progress_OSA.txt'],'w');
-fprintf(fid_osa,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','T elapsed');
+fprintf(fid_osa,'%10s %12s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','PRESS SPGL','T elapsed');
 fid_mpo=fopen([dataset,'_progress_MPO.txt'],'w');
-fprintf(fid_mpo,'%10s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS spgl','T elapsed');
-writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
+fprintf(fid_mpo,'%10s %12s %12s %12s %12s %12s %12s \r\n','RS iter','Gamma','Alpha','PRESS lasso','PRESS Tikh','PRESS SPGL','T elapsed');
+writeFormat = '%10i %12.4f %12.4f %12.4f %12.4f %12.4f %12.4f\r\n';
 pool =  parpool('local');
 %% OSA cross-validation for constrained problems
 % if disFlag
@@ -570,38 +572,37 @@ fiYunpeng  = ['Results_for_Yunpeng_',dataset];
 extParams  = values;
 save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
 %% Saving external parameters to table
-AERR  = round(AERR_mm(1:finalTerm,1)*100,3);
 clear Tab
-Tab = table(Step,Terms,AERR);
+Tab = table(Step,Terms);
 for iBeta=1:L
-    Parameters = round(Betas_nonreg_opt(:,iBeta),4);
+    Parameters = round(Betas_nonreg_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
 tableName = [folderName,'/Betas_ols'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms,AERR);
+Tab = table(Step,Terms);
 for iBeta=1:L
-    Parameters = round(Betas_tikh_opt(:,iBeta),4);
+    Parameters = round(Betas_tikh_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
 tableName = [folderName,'/Betas_tikhonov'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms,AERR);
+Tab = table(Step,Terms);
 for iBeta=1:L
-    Parameters = round(Betas_lasso_opt(:,iBeta),4);
+    Parameters = round(Betas_lasso_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
 tableName = [folderName,'/Betas_lasso'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms,AERR);
+Tab = table(Step,Terms);
 for iBeta=1:L
-    Parameters = round(Betas_spl_opt(:,iBeta),4);
+    Parameters = round(Betas_spl_opt(:,iBeta),8);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
     Tab = addvars(Tab,Parameters,'NewVariableNames',varName);
 end
@@ -614,7 +615,7 @@ else
     L1 = 1;
 end
 L2 = round(length(testFiles)/L1);
-index_test  = 1:800;
+index_test  = 1:400;
 index_plot  = 1:length(index_test);
 %% Validate unconstrained
 Theta_test  = Betas_nonreg_opt*A_valid';
