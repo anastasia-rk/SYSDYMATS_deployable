@@ -131,11 +131,11 @@ if center
 %    meanOut   = mean(Output);
 %    Output  = Output - meanOut;
 end
-T   = min(2000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
+T   = min(1000,length(Input)-n_u);                                         %length(Input); % length of the observation sequence
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Create the batch of input vectors
 iNarx = 0;                                                                  % batch index of the input vector in AR model
-timesNarx = [t_0:T];
+timesNarx = [t_0:t_0+T];
 for t=timesNarx
     iNarx = iNarx + 1;
     if n_y == 0

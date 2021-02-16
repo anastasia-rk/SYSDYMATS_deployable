@@ -6,7 +6,7 @@ visFlag = true;
 foamset     ='vdpo';
 input_i     = 2;                                                       % input column index
 output_i = 3;                                                       % output column index
-K        = 10;                                                      % number of datasets
+K        = 9;                                                      % number of datasets
 normC    = 1;
 dataset = 'V';
 addpath(['..\SYSDYMATS_data\',foamset])
@@ -28,8 +28,8 @@ regressors = 'Shift'
 % 	'Shift','Delta','');
 switch regressors
     case 'Shift'
-        n_u     = 4;                                                        % input signal lag length
-        n_y     = 4;                                                        % output signal lag length
+        n_u     = 3;                                                        % input signal lag length
+        n_y     = 3;                                                        % output signal lag length
         d       = n_y + n_u;                                                % size of input vector x
         lambda_p  = 3;                                                      % order of polynomial
         names = {'set','ny','nu'};                                          % names used to define results folder name (no more than 3).
@@ -163,7 +163,7 @@ Output = fileData(:,output_i)./normC;
 t_0 = 100;
 T   = min(1000,length(Input)-n_u); %length(Input); % length of the observation sequence
 iNarx = 0;                                                                  % batch index of the input vector in AR model
-timesNarx = [t_0:T];
+timesNarx = [t_0:t_0+T];
 y = Output(timesNarx);
 u = Input(timesNarx-1);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

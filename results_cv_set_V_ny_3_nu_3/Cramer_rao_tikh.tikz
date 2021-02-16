@@ -1,0 +1,21 @@
+% This file was created by matlab2tikz.
+%
+\begin{tikzpicture}
+
+\begin{axis}[%
+width=4.755cm,
+height=5cm,
+at={(0cm,0cm)},
+scale only axis,
+axis on top,
+xmin=0.5,
+xmax=72.5,
+y dir=reverse,
+ymin=0.5,
+ymax=72.5,
+axis background/.style={fill=white},
+legend style={legend cell align=left, align=left, draw=white!15!black}
+]
+\addplot [forget plot] graphics [xmin=0.5, xmax=72.5, ymin=0.5, ymax=72.5] {Cramer_rao_tikh-1.png};
+\end{axis}
+\end{tikzpicture}%

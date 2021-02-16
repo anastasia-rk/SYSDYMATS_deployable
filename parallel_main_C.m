@@ -147,7 +147,7 @@ end
         end
         significant_term{iTerm} = symb_term{S(iTerm)};
         BIC_all(iTerm) = BIC_sum/K;                                         % average AMDL over all sets
-        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.001); % check convergence
+        converged_BIC = (abs((BIC_all(iTerm) - BIC_all(iTerm-1))/BIC_all(iTerm)) < 0.002); % check convergence
         if converged_BIC
             bics  = [bics,iTerm];
         end
@@ -255,21 +255,21 @@ times = 1:length(Y_all);
 %% Form folds for CV with K-folds
 nFolds = length(Files);
 Folds = [1:nFolds];
-cvpart = cvpartition(length(Y_all),'kFold',nFolds);                         % create even-ish partitions for k-folding
-for iFold = 1:nFolds                                                        % over all Folds
-    timesTrain{iFold} = times(cvpart.training(iFold));
-    timesTest{iFold}  = times(cvpart.test(iFold));
-    Y_train{iFold}    = Y_all(timesTrain{iFold},:);
-    Y_test{iFold}     = Y_all(timesTest{iFold},:);
-    M_train{iFold}    = M_all(timesTrain{iFold},:);
-%     [Q_t,R_t] =  mgson(M_train{iFold});
-    Q_train{iFold}    = M_train{iFold};
-    M_test{iFold}     = M_all(timesTest{iFold},:); %M_all(timesTest{iFold},:);
-%     [Q_tt,R_tt] =  mgson(M_test{iFold});
-    Q_test{iFold}    = M_test{iFold};
-    nData(iFold)      = cvpart.TestSize(iFold);
-    clear Q_t R_t Q_tt R_tt
-end
+% cvpart = cvpartition(length(Y_all),'kFold',nFolds);                         % create even-ish partitions for k-folding
+% for iFold = 1:nFolds                                                        % over all Folds
+%     timesTrain{iFold} = times(cvpart.training(iFold));
+%     timesTest{iFold}  = times(cvpart.test(iFold));
+%     Y_train{iFold}    = Y_all(timesTrain{iFold},:);
+%     Y_test{iFold}     = Y_all(timesTest{iFold},:);
+%     M_train{iFold}    = M_all(timesTrain{iFold},:);
+% %     [Q_t,R_t] =  mgson(M_train{iFold});
+%     Q_train{iFold}    = M_train{iFold};
+%     M_test{iFold}     = M_all(timesTest{iFold},:); %M_all(timesTest{iFold},:);
+% %     [Q_tt,R_tt] =  mgson(M_test{iFold});
+%     Q_test{iFold}    = M_test{iFold};
+%     nData(iFold)      = cvpart.TestSize(iFold);
+%     clear Q_t R_t Q_tt R_tt
+% end
 %% Form blocks for CV of time series
 fig('MPO CV folds',visFlag);
 for iMpo = 1:length(Files)
@@ -288,9 +288,9 @@ for iMpo = 1:length(Files)
     I   = eye(finalTerm);                                                       % unit matrix, size NxN
     Kr_mpo  = kron(A_mpo{iMpo},I);
     M  = Phi_mpo{iFile}*Kr_mpo;
-    [Q_t,R_t] =  mgson(M);
+%     [Q_t,R_t] =  mgson(M);
     Q_train_mpo{iFile} = M;
-    R_train_mpo{iFile} = R_t;
+%     R_train_mpo{iFile} = R_t;
     Y_train_mpo{iFile}  = Y_all(t_train,:); 
     t_test{iMpo}        = 1:100;
     nData_mpo(iFile)    = length(t_test{iMpo});
@@ -299,7 +299,7 @@ for iMpo = 1:length(Files)
     clear t_train M Q_t R_t
 end
 %% Random search vector
-log_max = 2; log_min = -6; nLambdas = 150;
+log_max = 0; log_min = -6; nLambdas = 200;
 lambdas = [10.^(log_min + (log_max-log_min)*rand(nLambdas,1)) rand(nLambdas,1)];
 L       = size(A,2);
 fid_osa=fopen([dataset,'_progress_OSA.txt'],'w');
@@ -361,8 +361,7 @@ for iLambda = 1:nLambdas                                                    % ac
         g_bar    = gain*Y_train_mpo{iFile};                                        % Tikhonov
         g_lasso  = lasso(Q_train_mpo{iFile},Y_train_mpo{iFile},'lambda',lambda); 
 %         g_lasso  = LassoShooting(Q_train_mpo{iFile},Y_train_mpo{iFile},lambda,'verbose',0); % LASSO
-        g_spl = SPGL(Y_train_mpo{iFile},Q_train_mpo{iFile},lambda,lambda_g,p_sparesgroup);
-%          g_spl    = SPLAsso(Y_train_mpo{iFile}, Q_train_mpo{iFile}, p_sparesgroup, (1-lambda_g)*lambda, lambda_g*lambda); % sparse group lasso
+        Betas_spgl = SPGL(Y_train_mpo{iFile},Q_train_mpo{iFile},lambda,lambda_g,p_sparesgroup,g_lasso);
 %% Orthogonal solution
 %         Betas_tikh   = reshape(linsolve(R_all,g_bar,struct('UT', true)),[finalTerm L]); 
 %         Betas_lass   = reshape(linsolve(R_all,g_lasso,struct('UT', true)),[finalTerm L]);  
@@ -370,11 +369,10 @@ for iLambda = 1:nLambdas                                                    % ac
 %% Standard RLS
         Betas_tikh   = reshape(g_bar,[finalTerm L]); 
         Betas_lass   = reshape(g_lasso,[finalTerm L]); 
-         Betas_spgl   = reshape(g_spl,[finalTerm L]);
 %% Get theta
         Theta_tikh{iMpo}  = Betas_tikh*A(iMpo,:)';
         Theta_lass{iMpo}  = Betas_lass*A(iMpo,:)';
-         Theta_spgl{iMpo}  = Betas_spgl*A(iMpo,:)';
+        Theta_spgl{iMpo}  = Betas_spgl*A(iMpo,:)';
     end
     t_el_mpo = toc;
 % MPO validation
@@ -385,13 +383,13 @@ for iLambda = 1:nLambdas                                                    % ac
         File    = matfile(fName,'Writable',true);
         y_mpo   = File.y_narx(t_test{iMpo},1);
         y_mpo_lasso = y_mpo;
-          y_mpo_spgl  = y_mpo;
+        y_mpo_spgl  = y_mpo;
         u_mpo = File.u_narx(t_test{iMpo},1);
         for t=n_y+1:nData_mpo(iFile)
             for iTerm=1:finalTerm
                 x_mpo(iTerm)        = f_model{iTerm}(u_mpo,y_mpo,t);
                 x_mpo_lasso(iTerm)  = f_model{iTerm}(u_mpo,y_mpo_lasso,t);
-                 x_mpo_spgl(iTerm)   = f_model{iTerm}(u_mpo,y_mpo_spgl,t);
+                x_mpo_spgl(iTerm)   = f_model{iTerm}(u_mpo,y_mpo_spgl,t);
             end
             y_mpo(t)        = x_mpo*Theta_tikh{iMpo};
             y_mpo_lasso(t)  = x_mpo_lasso*Theta_lass{iMpo};
@@ -529,9 +527,8 @@ alpha_spl_mpo = lambdas(i_min_spl_mpo,2)
 % addpath('../MATLAB/cvx');
 % cvx_setup 
 % g_spl  = SPLAsso(Y_all, M_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
-g_spl = SPGL(Y_all,M_all,lambda_spl_mpo,alpha_spl_mpo,p_sparesgroup);
-B_spl   = g_spl; % linsolve(R_all,g_spl,struct('UT', true)); 
-Betas_spl_opt = reshape(B_spl,[finalTerm,L])
+%%
+Betas_spl_opt = SPGL(Y_all,M_all,lambda_spl_mpo,alpha_spl_mpo,p_sparesgroup,g_tikh)
 %% display estimates
 if disFlag
     Betas_nonreg_opt

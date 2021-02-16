@@ -1,1 +1,1 @@
-   RS iter        Gamma        Alpha  PRESS lasso   PRESS Tikh    T elapsed 
+   RS iter        Gamma        Alpha  PRESS lasso   PRESS Tikh   PRESS SPGL    T elapsed 
