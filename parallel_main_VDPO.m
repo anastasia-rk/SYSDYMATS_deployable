@@ -880,8 +880,8 @@ for iFile = testFiles
     legend('True output',['OLS, RMSE = ',num2str(RMSE_ols(iTheta))],['Tikhonov, RMSE = ',num2str(RMSE_tikh(iTheta))],['LASSO, RMSE = ',num2str(RMSE_lasso(iTheta))],['SPGL, RMSE = ',num2str(RMSE_spgl(iTheta))]);
     xlabel('Sample index'); ylabel(['$',y_str,'$']);
  clear File Phi_all Phi y_model
-end
-tikzName = [folderName,'/','Validate_all_',dataset,num2str(iFile),'.tikz'];
+ tikzName = [folderName,'/','Validate_all_',dataset,num2str(iFile),'.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '6cm', 'width','8cm','checkForUpdates',false);
+end

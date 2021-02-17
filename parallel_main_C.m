@@ -528,38 +528,69 @@ alpha_spl_mpo = lambdas(i_min_spl_mpo,2)
 % cvx_setup 
 % g_spl  = SPLAsso(Y_all, M_all, p_sparesgroup, (1-alpha_spl_mpo)*lambda_spl_mpo, alpha_spl_mpo*lambda_spl_mpo); 
 %%
-Betas_spl_opt = SPGL(Y_all,M_all,lambda_spl_mpo,alpha_spl_mpo,p_sparesgroup,g_tikh)
+Betas_spl_opt = SPGL(Y_all,M_all,lambda_spl_mpo,alpha_spl_mpo,p_sparesgroup,g_lasso);
+%% Direct estimation from Thetas
+Th_vec = Theta(:);
+Th_vec(find(Th_vec ==0)) =[];
+Kr_direct = kron(A,eye(finalTerm));
+B_direct = Kr_direct\Th_vec;
+Betas_direct = reshape(B_direct,[finalTerm,L])
 %% display estimates
 if disFlag
     Betas_nonreg_opt
+    Betas_direct_opt
     Betas_tikh_opt
     Betas_lasso_opt
-     Betas_spl_opt
+    Betas_spl_opt
 end
 %% Fisher info
-Hess = M_all'*M_all;
 sig_nonreg = norm(Y_all - M_all*B_bar);
-FIM_nonreg = Hess/sig_nonreg;
+FIM_nonreg = M_all'*M_all;
+Cov_nonreg = (Y_all - M_all*B_bar)'*(Y_all - M_all*B_bar);
+FM_nonreg = mvnrfish(Y_all,M_all,Cov_nonreg,'full');
 sig_tikh = norm(Y_all - M_all*B_tikh);
-FIM_tikh = Hess/sig_tikh;
-sig_lasso = norm(Y_all - M_all*B_lasso);
-FIM_lasso = Hess/sig_lasso;
-sig_spgl = norm(Y_all - M_all*B_spl);
-FIM_spgl = Hess/sig_spgl;
-fig('Fisher','On');
-subplot(2,2,1);
-imagesc(FIM_nonreg);
+FIM_tikh = (R_mm + lambda_opt_mpo*eye(size(R_mm)));
+sig_direct = norm(Th_vec - Kr_direct*B_direct);
+FIM_direct = (Kr_direct'*Kr_direct);
+Cov_direct = (Th_vec - Kr_direct*B_direct)'*(Th_vec - Kr_direct*B_direct);
+FM_direct = mvnrfish(Th_vec,Kr_direct,Cov_direct,'full');
+fig('Cramer Rao',visFlag);
+subplot(2,3,1);
+imagesc(pinv(FIM_direct));
 colorbar;
-subplot(2,2,2);
-imagesc(FIM_tikh);
+subplot(2,3,2);
+imagesc(pinv(FIM_nonreg));
 colorbar;
-subplot(2,2,3);
-imagesc(FIM_lasso);
+subplot(2,3,3);
+imagesc(pinv(FIM_tikh));
 colorbar;
-subplot(2,2,4);
-imagesc(FIM_spgl);
+subplot(2,3,4);
+imagesc((FIM_direct));
 colorbar;
-
+subplot(2,3,5);
+imagesc((FIM_nonreg));
+colorbar;
+subplot(2,3,6);
+imagesc((FIM_tikh));
+colorbar;
+fig('CR Direct','Off');
+imagesc(pinv(FIM_direct));
+tikzName = [folderName,'/','Cramer_rao_direct.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '5cm', 'width','5cm','checkForUpdates',false);
+fig('CR OLS','Off');
+imagesc(pinv(FIM_nonreg));
+tikzName = [folderName,'/','Cramer_rao_ols.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '5cm', 'width','5cm','checkForUpdates',false);
+fig('CR Tikhonov','Off');
+imagesc(pinv(FIM_tikh));
+tikzName = [folderName,'/','Cramer_rao_tikh.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '5cm', 'width','5cm','checkForUpdates',false);
 %% Save all workspace
 foName = ['../SYSDYMATS_data/results/',folderName]
 make_folder(foName)
@@ -569,8 +600,9 @@ fiYunpeng  = ['Results_for_Yunpeng_',dataset];
 extParams  = values;
 save(fiYunpeng,'Betas_nonreg_opt','Betas_tikh_opt','Betas_lasso_opt','A','A_valid','Files','testFiles','A_symb','f_model','g_model','Terms','extParams'); %'Betas_spl_opt'% 
 %% Saving external parameters to table
+AERR  = round(AERR_mm(1:finalTerm,1)*100,3);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_nonreg_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -579,7 +611,7 @@ end
 tableName = [folderName,'/Betas_ols'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_tikh_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -588,7 +620,7 @@ end
 tableName = [folderName,'/Betas_tikhonov'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_lasso_opt(:,iBeta),6);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -597,7 +629,7 @@ end
 tableName = [folderName,'/Betas_lasso'];
 table2latex(Tab,tableName);
 clear Tab
-Tab = table(Step,Terms);
+Tab = table(Step,Terms,AERR);
 for iBeta=1:L
     Parameters = round(Betas_spl_opt(:,iBeta),8);
     varName = ['$\beta_{',num2str(iBeta-1),'}$'];
@@ -649,6 +681,44 @@ for iFile = testFiles
  clear File Phi_all Phi y_osa y_mpo
 end
 tikzName = [folderName,'/','OLS_validation.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
+        %% Validate direct
+Theta_test  = Betas_direct*A_valid';
+iTheta      = 0;
+fig('Validation OLS theta',visFlag);
+for iFile = testFiles
+% OSA prediction
+    fName   = [dictFolder,'/dict_',dataset,num2str(iFile)];
+    File    = matfile(fName,'Writable',true);
+    indSign = S(1:finalTerm);                                               % select the indeces of significant terms from the ordered set
+    Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
+    Phi     = Phi_all(:,indSign);                                           % select only signficant terms
+    iTheta  = iTheta + 1;
+    y_osa   = Phi*Theta_test(:,iTheta);                                      % model NARMAX output
+    RMSE_osa(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_osa).^2));    % Root Mean Squared Error
+% MPO prediction
+    y_mpo = File.y_narx(index_test,1);
+    u_mpo = File.u_narx(index_test,1);
+    for t=n_y+1:index_test(end)
+        for iTerm=1:finalTerm
+            x_mpo(iTerm) = f_model{iTerm}(u_mpo,y_mpo,t);
+        end
+        y_mpo(t)    = x_mpo*Theta_test(:,iTheta);
+    end
+    RMSE_mpo(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_mpo).^2)); 
+% Compare outputs
+    subplot(L2,L1,iTheta);
+    plot(index_test(index_plot)+File.t_0,File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
+    plot(index_test(index_plot)+File.t_0,y_osa(index_plot,1),'--','LineWidth',2); hold on;
+    plot(index_test(index_plot)+File.t_0,y_mpo(index_plot,1),':','LineWidth',2); hold on;
+    legend('True output','OSA predition','MPO prediction');
+    xlabel('Sample index'); ylabel(['$',y_str,'$']);
+    title([dataset,num2str(iFile),': RMSE(OSA) = ',num2str(RMSE_osa(iTheta)),', RMSE(MPO) = ',num2str(RMSE_mpo(iTheta))]);
+ clear File Phi_all Phi y_osa y_mpo
+end
+tikzName = [folderName,'/','Direct_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
@@ -767,3 +837,63 @@ tikzName = [folderName,'/','Tikhonov_validation.tikz'];
 cleanfigure;
 matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
             false, 'height', '12cm', 'width','15cm','checkForUpdates',false);
+        %% Validate all MPO for test files only
+testOnly = [3,9];
+index = find(testFiles == testOnly);
+A_test = A_valid(index,:)
+Theta_tikh   = Betas_tikh_opt*A_test';
+Theta_direct = Betas_direct*A_test';
+Theta_ols    = Betas_nonreg_opt*A_test';
+Theta_lasso  = Betas_lasso_opt*A_test';
+Theta_spgl   = Betas_spl_opt*A_test';
+iTheta = 0;
+for iFile = testFiles
+% OSA prediction
+    fName   = [dictFolder,'/dict_',dataset,num2str(iFile)];
+    File    = matfile(fName,'Writable',true);
+    indSign = S(1:finalTerm);                                               % select the indeces of significant terms from the ordered set
+    Phi_all = File.term(index_test,:);                                      % extract all terms into a vector
+    Phi     = Phi_all(:,indSign);                                           % select only signficant terms
+    iTheta  = iTheta + 1;
+% MPO prediction
+        y_tikh    = File.y_narx(index_test,1);
+        y_direct    = File.y_narx(index_test,1);
+        y_ols  = File.y_narx(index_test,1);
+        y_lasso   = File.y_narx(index_test,1);
+        y_spgl    = File.y_narx(index_test,1);
+    u_mpo = File.u_narx(index_test,1);
+    for t=n_y+1:index_test(end)
+        for iTerm=1:finalTerm
+            x_tikh(iTerm) = f_model{iTerm}(u_mpo,y_tikh,t);
+            x_direct(iTerm) = f_model{iTerm}(u_mpo,y_direct,t);
+            x_ols(iTerm) = f_model{iTerm}(u_mpo,y_ols,t);
+            x_lasso(iTerm) = f_model{iTerm}(u_mpo,y_lasso,t);
+            x_spgl(iTerm) = f_model{iTerm}(u_mpo,y_spgl,t);
+        end
+        y_tikh(t)    = x_tikh*Theta_tikh(:,iTheta);
+        y_direct(t)    = x_direct*Theta_direct(:,iTheta);
+        y_ols(t)    = x_ols*Theta_ols(:,iTheta);
+        y_lasso(t)    = x_lasso*Theta_lasso(:,iTheta);
+        y_spgl(t)    = x_spgl*Theta_spgl(:,iTheta);
+    end
+    RMSE_tikh(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_tikh).^2));
+    RMSE_direct(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_direct).^2)); 
+    RMSE_ols(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_ols).^2)); 
+    RMSE_lasso(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_lasso).^2)); 
+    RMSE_spgl(iTheta) = sqrt(mean((File.y_narx(index_test,1) - y_spgl).^2)); 
+% Compare outputs
+   figName = ['V',num2str(iFile)]; 
+   fig(figName,visFlag);
+    plot(index_test(index_plot),File.y_narx(index_test(index_plot),1),'LineWidth',2); hold on;
+    plot(index_test(index_plot),y_ols(index_plot,1),':','LineWidth',2); hold on;
+    plot(index_test(index_plot),y_tikh(index_plot,1),'--','LineWidth',2); hold on;
+    plot(index_test(index_plot),y_lasso(index_plot,1),'-.','LineWidth',2); hold on;
+    plot(index_test(index_plot),y_spgl(index_plot,1),':','LineWidth',2); hold on;
+    legend('True output',['OLS, RMSE = ',num2str(RMSE_ols(iTheta))],['Tikhonov, RMSE = ',num2str(RMSE_tikh(iTheta))],['LASSO, RMSE = ',num2str(RMSE_lasso(iTheta))],['SPGL, RMSE = ',num2str(RMSE_spgl(iTheta))]);
+    xlabel('Sample index'); ylabel(['$',y_str,'$']);
+ clear File Phi_all Phi y_model
+end
+tikzName = [folderName,'/','Validate_all_',dataset,num2str(iFile),'.tikz'];
+cleanfigure;
+matlab2tikz(tikzName, 'showInfo', false,'parseStrings',false,'standalone', ...
+            false, 'height', '6cm', 'width','8cm','checkForUpdates',false);
